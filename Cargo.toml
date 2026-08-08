@@ -1,0 +1,12 @@
+[package]
+name = "originos"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+slint = "1.17.1"
+ratatui = "0.26"
+crossterm = "0.27"
+portable-pty = "0.8"
+tui-term = "0.1"
+vt100 = "0.15"
