@@ -20,7 +20,7 @@ component DockIcon inherits Rectangle {
 }
 
 export component MainWindow inherits Window {
-title: "OrTerminal";
+title: "Origin OS";
 width: 1100px;
 height: 650px;
 background: #0c0c0c;
@@ -59,7 +59,7 @@ background: #0c0c0c;
         background: #1a1a1a;
 
         Text {
-            text: "OrTerminal";
+            text: "Origin OS";
             color: #d4d4d4;
             font-size: 12px;
 
@@ -392,7 +392,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Interactive shell.
     //
     // Bash owns the prompt.
-    // OrTerminal does NOT draw one.
+    // Origin OS does NOT draw one.
     if let Some(arg) = shell_interactive {
         cmd.arg(arg);
     }
