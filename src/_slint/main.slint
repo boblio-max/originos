@@ -1,0 +1,153 @@
+import { CommandBubble } from "command_bubble.slint";
+import { QuickSettings } from "quick_settings.slint";
+import { Taskbar } from "taskbar.slint";
+
+export component MainWindow inherits Window {
+title: "Origin OS";
+width: 1100px;
+height: 650px;
+background: #0c0c0c;
+
+    default-font-family: "monospace";
+    default-font-size: 15px;
+
+    in property <string> terminal-text: "";
+    in property <string> bubble-text: "origin-dev@OrOS-DEV:~$";
+    in property <string> bubble-gen-text: "";
+    in-out property <bool> shortcut_pressed: false;
+    in-out property <bool> output_generated: false;
+    // Rust receives every keyboard event directly.
+    callback key-input(string, bool);
+
+    // The dock is keyboard-driven: this OS has no mouse.
+    in property <bool> dock-active: false;
+    in property <bool> taskbar-active: false;
+    in property <int> dock-selection: 0;
+    in property <bool> qs_active: false;
+    in property <bool> qsettings-active: false;
+    in property <int> qs-selection: 0;
+
+    callback icon-activated(int);
+
+    // ─────────────────────────────────────────────
+    // TITLE BAR
+    // ─────────────────────────────────────────────
+
+    Rectangle {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: 28px;
+
+        background: #1a1a1a;
+
+        Text {
+            text: "Origin OS";
+            color: #d4d4d4;
+            font-size: 12px;
+
+            width: parent.width;
+            height: parent.height;
+
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+
+    // ─────────────────────────────────────────────
+    // ONE TERMINAL
+    // ─────────────────────────────────────────────
+
+    terminal := FocusScope {
+        x: 0px;
+        y: 28px;
+
+        width: parent.width;
+        height: parent.height - 28px;
+
+        focus-on-click: true;
+
+        // Grab keyboard focus when the terminal starts.
+        init => {
+            self.focus();
+        }
+
+        key-pressed(event) => {
+            root.key-input(
+                event.text,
+                event.modifiers.control
+            );
+            accept
+        }
+
+        key-released(event) => {
+            accept
+        }
+
+        // ─────────────────────────────────────────
+        // Terminal screen
+        // ─────────────────────────────────────────
+
+        Flickable {
+            x: 0px;
+            y: 0px;
+
+            width: parent.width;
+            height: parent.height;
+
+            viewport-width: self.width;
+            viewport-height: self.height;
+
+            Text {
+                x: 12px;
+                y: 12px;
+
+                width: parent.width - 24px;
+                height: parent.height - 24px;
+
+                text: root.terminal-text;
+
+                color: #d4d4d4;
+
+                wrap: word-wrap;
+
+                horizontal-alignment: left;
+                vertical-alignment: top;
+            }
+        }
+    }
+
+    // ─────────────────────────────────────────────
+    // COMMAND BUBBLE — a real secondary shell.
+    // ─────────────────────────────────────────────
+    // Top-level sibling (not nested inside FocusScope/Flickable)
+    // so it's never clipped, and declared last so it always
+    // paints on top. Height grows with content instead of being
+    // pinned to one line, since it needs room to show output.
+    bubble := CommandBubble {
+        active: root.shortcut_pressed;
+        bubble-text: root.bubble-text;
+        bubble-gen-text: root.bubble-gen-text;
+        output-generated: root.output_generated;
+    }
+
+    taskbar := Taskbar {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        active: root.dock-active;
+        pill-active: root.taskbar-active;
+        selection: root.dock-selection;
+    }
+
+    quick_settings := QuickSettings {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        active: root.qsettings-active;
+        pill-active: root.qs_active;
+        selection: root.qs-selection;
+    }
+}

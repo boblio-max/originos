@@ -4,307 +4,20 @@ use std::{
     sync::{Arc, Mutex},
     thread,
 };
+mod command_bubble;
 mod commands;
+mod quick_settings;
+mod taskbar;
 
+use command_bubble::CommandBubble;
 use commands::OriginShell;
+use quick_settings::QuickSettings;
+use taskbar::Taskbar;
 
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 
-slint::slint! {
-component DockIcon inherits Rectangle {
-    in property <bool> selected: false;
-    width: 20px;
-    height: 20px;
-    border-radius: 5px;
-    background: selected ? #00b3b3 : #008080;
-}
+slint::include_modules!();
 
-export component MainWindow inherits Window {
-title: "Origin OS";
-width: 1100px;
-height: 650px;
-background: #0c0c0c;
-
-    default-font-family: "monospace";
-    default-font-size: 15px;
-
-    in property <string> terminal-text: "";
-    in property <string> bubble-text: "origin-dev@OrOS-DEV:~$";
-    in property <string> bubble-gen-text: "";
-    in-out property <bool> shortcut_pressed: false;
-    in-out property <bool> output_generated: false;
-    // Rust receives every keyboard event directly.
-    callback key-input(string, bool);
-
-    // The dock is keyboard-driven: this OS has no mouse.
-    in property <bool> dock-active: false;
-    in property <bool> taskbar-active: false;
-    in property <int> dock-selection: 0;
-    in property <bool> qs_active: false;
-    in property <bool> qsettings-active: false;
-    in property <int> qs-selection: 0;
-
-    callback icon-activated(int);
-
-    // ─────────────────────────────────────────────
-    // TITLE BAR
-    // ─────────────────────────────────────────────
-
-    Rectangle {
-        x: 0px;
-        y: 0px;
-        width: parent.width;
-        height: 28px;
-
-        background: #1a1a1a;
-
-        Text {
-            text: "Origin OS";
-            color: #d4d4d4;
-            font-size: 12px;
-
-            width: parent.width;
-            height: parent.height;
-
-            horizontal-alignment: center;
-            vertical-alignment: center;
-        }
-    }
-
-    // ─────────────────────────────────────────────
-    // ONE TERMINAL
-    // ─────────────────────────────────────────────
-
-    terminal := FocusScope {
-        x: 0px;
-        y: 28px;
-
-        width: parent.width;
-        height: parent.height - 28px;
-
-        focus-on-click: true;
-
-        // Grab keyboard focus when the terminal starts.
-        init => {
-            self.focus();
-        }
-
-        key-pressed(event) => {
-            root.key-input(
-                event.text,
-                event.modifiers.control
-            );
-            accept
-        }
-
-        key-released(event) => {
-            accept
-        }
-
-        // ─────────────────────────────────────────
-        // Terminal screen
-        // ─────────────────────────────────────────
-
-        Flickable {
-            x: 0px;
-            y: 0px;
-
-            width: parent.width;
-            height: parent.height;
-
-            viewport-width: self.width;
-            viewport-height: self.height;
-
-            Text {
-                x: 12px;
-                y: 12px;
-
-                width: parent.width - 24px;
-                height: parent.height - 24px;
-
-                text: root.terminal-text;
-
-                color: #d4d4d4;
-
-                wrap: word-wrap;
-
-                horizontal-alignment: left;
-                vertical-alignment: top;
-            }
-        }
-    }
-
-    // ─────────────────────────────────────────────
-    // COMMAND BUBBLE — a real secondary shell.
-    // ─────────────────────────────────────────────
-    // Top-level sibling (not nested inside FocusScope/Flickable)
-    // so it's never clipped, and declared last so it always
-    // paints on top. Height grows with content instead of being
-    // pinned to one line, since it needs room to show output.
-    bubble_label := Text {
-        x: 725px;
-        y: 85px;
-        width: 110px;
-
-        text: "COMMAND BUBBLE";
-        color: #00b3b3;
-        font-size: 11px;
-        horizontal-alignment: center;
-        visible: root.shortcut_pressed;
-    }
-    bubble := Rectangle {
-        x: 650px;
-        y: 100px;
-
-        background: #000000dd;
-        border-radius: 6px;
-        border-width: 5px;
-        border-color: #008080;
-        width: max(text_box.preferred-width + 24px, 260px);
-        height: max(text_box.preferred-height + 20px, 36px);
-        visible: root.shortcut_pressed;
-
-        text_box := Text {
-            x: 12px;
-            y: 10px;
-
-            text: root.bubble-text;
-            color: #d4d4d4;
-            font-size: 15px;
-
-            wrap: word-wrap;
-
-            horizontal-alignment: left;
-            vertical-alignment: top;
-        }
-    }
-    bubble_output := Rectangle {
-        x: 650px;
-        y: 150px;
-
-        background: #000000dd;
-        border-radius: 6px;
-        border-width: 5px;
-        border-color: #008080;
-        width: max(bubble_text_box.preferred-width + 24px, 260px);
-        height: max(bubble_text_box.preferred-height + 20px, 36px);
-        visible: root.output_generated && root.shortcut_pressed;
-
-        bubble_text_box := Text {
-            x: 12px;
-            y: 10px;
-
-            text: root.bubble-gen-text;
-            color: #d4d4d4;
-            font-size: 15px;
-
-            wrap: word-wrap;
-
-            horizontal-alignment: left;
-            vertical-alignment: top;
-        }
-    }
-
-    dock_label := Text {
-        x: (parent.width - 100px) / 2;
-        y: parent.height - 62px;
-        width: 100px;
-
-        text: "TASKBAR";
-        color: #00b3b3;
-        font-size: 11px;
-        horizontal-alignment: center;
-        visible: root.dock-active;
-    }
-
-    taskbar := Rectangle {
-        x: (parent.width - 190px) / 2;
-        y: parent.height - 45px;
-
-        width: 190px;
-        height: 36px;
-        border-radius: 10px;
-        border-width: root.dock-active ? 2px : 0px;
-        border-color: #00b3b3;
-
-        background: #1a1a1a;
-        visible: root.taskbar-active;
-        HorizontalLayout {
-            padding: 8px;
-            spacing: 4px;
-            alignment: center;
-
-            for idx in [0, 1, 2, 3, 4, 5, 6] : DockIcon {
-                selected: root.dock-selection == idx;
-            }
-        }
-    }
-
-    taskbar_hidden := Rectangle {
-        x: (parent.width - 190px) / 2;
-        y: parent.height - 10px;
-        
-        width: 190px;
-        height: 36px;
-        border-radius: 10px;
-        border-width: root.dock-active ? 2px : 0px;
-        border-color: #00b3b3;
-
-        background: #1a1a1a;
-        visible: !root.taskbar-active;
-    }
-
-    qs_hidden := Rectangle {
-        x: parent.width - 200px;
-        y: 23px;
-
-        width: 200px;
-        height: 15px;
-        border-width: root.qs_active ? 2px : 0px;
-        border-radius:10px;
-        border-color: #1a1a1a;
-
-        background: #1a1a1a;
-        visible: !root.qs-active;
-    }
-
-    qs := Rectangle {
-        x: (parent.width - 200px);
-        y: 28px;
-
-        width: 200px;
-        height: 100px;
-        border-radius: 10px;
-        border-width: root.qs-active ? 2px : 0px;
-        border-color: #00b3b3;
-
-        background: #1a1a1a;
-        visible: root.qsettings-active;
-        HorizontalLayout {
-            padding: 8px;
-            spacing: 4px;
-            alignment: center;
-
-            for idx in [0, 1, 2, 3, 4, 5, 6] : DockIcon {
-                selected: root.qs-selection == idx;
-            }
-        }
-    }
-    qs_label := Text {
-        x: (parent.width - 150px);
-        y: 130px;
-        width: 100px;
-
-        text: "QUICK SETTINGS";
-        color: #00b3b3;
-        font-size: 11px;
-        horizontal-alignment: center;
-        visible: root.qsettings-active;
-    }
-}
-
-
-}
 
 
 /// Resolve a usable shell program.
@@ -637,12 +350,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let bubble_writer = bwriter.clone();
         let weak_window_for_input = window.as_weak();
 
-        let mut bubble_mode = false;
-        let mut dock_mode = false;
-        let mut dock_selection = 0usize;
+        let mut bubble = CommandBubble::new();
         let mut tab_held = false;
-        let mut quick_settings = false;
-        let mut qs_selection = 0usize;
+        let mut quick_settings = QuickSettings::new();
+        let mut taskbar = Taskbar::new();
 
         window.on_key_input(
             move |key, control| {
@@ -652,129 +363,60 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
 
                 if key.eq_ignore_ascii_case("q") && tab_held {
-                    bubble_mode = !bubble_mode;
                     if let Some(w1) = weak_window_for_input.upgrade() {
-                        w1.set_shortcut_pressed(bubble_mode);
-                        if !bubble_mode {
-                            w1.set_output_generated(false);
-                            w1.set_bubble_gen_text(String::new().into());
-                        }
-                    } 
+                        bubble.toggle(&w1);
+                    }
                     tab_held = false;
 
                     println!(
                         "Keyboard mode: {}",
-                        if bubble_mode { "BUBBLE" } else { "TERMINAL" }
+                        if bubble.active() { "BUBBLE" } else { "TERMINAL" }
                     );
                     return;
                 }
 
                 if key.eq_ignore_ascii_case("s") && tab_held {
-                    quick_settings = !quick_settings;
-                    qs_selection = 0;
                     if let Some(w1) = weak_window_for_input.upgrade() {
-                        w1.set_qsettings_active(quick_settings);
-                        w1.set_qs_active(quick_settings);
-                        w1.set_qs_selection(qs_selection as i32);
+                        quick_settings.toggle(&w1);
                     }
                     tab_held = false;
 
                     println!(
                         "Keyboard mode: {}",
-                        if quick_settings { "QSETTINGS" } else { "TERMINAL" }
+                        if quick_settings.active() { "QSETTINGS" } else { "TERMINAL" }
                     );
                     return;
                 }
-                if quick_settings {
-                    match key.as_str() {
-                        "\u{f702}" => {
-                            qs_selection = (qs_selection + 6) % 7;
-                            if let Some(w1) = weak_window_for_input.upgrade() {
-                                w1.set_qs_selection(qs_selection as i32);
-                            }
-                            return;
-                        }
-                        "\u{f703}" => {
-                            qs_selection = (qs_selection + 1) % 7;
-                            if let Some(w1) = weak_window_for_input.upgrade() {
-                                w1.set_qs_selection(qs_selection as i32);
-                            }
-                            return;
-                        }
-                        "\n" | "\r" => {
-                            let activated = qs_selection;
-                            quick_settings = false;
-                            if let Some(w1) = weak_window_for_input.upgrade() {
-                                w1.set_qsettings_active(false);
-                                w1.set_qs_active(false);
-                                w1.invoke_icon_activated(activated as i32);
-                            }
-                            return;
-                        }
-                        _ => {
-                            quick_settings = false;
-                            if let Some(w1) = weak_window_for_input.upgrade() {
-                                w1.set_qsettings_active(false);
-                                w1.set_qs_active(false);
-                            }
+                if quick_settings.active() {
+                    if let Some(w1) = weak_window_for_input.upgrade() {
+                        if quick_settings.handle_key(&w1, key.as_str()) {
                             return;
                         }
                     }
+                    return;
                 }
 
                 if key.eq_ignore_ascii_case("t") && tab_held {
-                    dock_mode = !dock_mode;
-                    dock_selection = 0;
                     if let Some(w1) = weak_window_for_input.upgrade() {
-                        w1.set_dock_active(dock_mode);
-                        w1.set_taskbar_active(dock_mode);
-                        w1.set_dock_selection(dock_selection as i32);
+                        taskbar.toggle(&w1);
                     }
                     tab_held = false;
 
                     println!(
                         "Keyboard mode: {}",
-                        if dock_mode { "DOCK" } else { "TERMINAL" }
+                        if taskbar.active() { "DOCK" } else { "TERMINAL" }
                     );
 
                     return;
                 }
 
-                if dock_mode {
-                    match key.as_str() {
-                        "\u{f702}" => {
-                            dock_selection = (dock_selection + 6) % 7;
-                            if let Some(w1) = weak_window_for_input.upgrade() {
-                                w1.set_dock_selection(dock_selection as i32);
-                            }
-                            return;
-                        }
-                        "\u{f703}" => {
-                            dock_selection = (dock_selection + 1) % 7;
-                            if let Some(w1) = weak_window_for_input.upgrade() {
-                                w1.set_dock_selection(dock_selection as i32);
-                            }
-                            return;
-                        }
-                        "\n" | "\r" => {
-                            let activated = dock_selection;
-                            dock_mode = false;
-                            if let Some(w1) = weak_window_for_input.upgrade() {
-                                w1.set_dock_active(false);
-                                w1.set_taskbar_active(false);
-                                w1.invoke_icon_activated(activated as i32);
-                            }
-                            return;
-                        }
-                        _ => {
-                            dock_mode = false;
-                            if let Some(w1) = weak_window_for_input.upgrade() {
-                                w1.set_dock_active(false);
-                                w1.set_taskbar_active(false);
-                            }
+                if taskbar.active() {
+                    if let Some(w1) = weak_window_for_input.upgrade() {
+                        if taskbar.handle_key(&w1, key.as_str()) {
                             return;
                         }
                     }
+                    return;
                 }
 
                 // Any non-shortcut key clears the Tab state so the
@@ -810,7 +452,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 // to whichever terminal currently owns
                 // keyboard input.
                 //
-                let active_writer = if bubble_mode {
+                let active_writer = if bubble.active() {
                     &bubble_writer
                 } else {
                     &writer

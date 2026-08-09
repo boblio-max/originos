@@ -1,0 +1,62 @@
+component TaskbarIcon inherits Rectangle {
+    in property <bool> selected: false;
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    background: selected ? #00b3b3 : #008080;
+}
+
+export component Taskbar inherits Rectangle {
+    in property <bool> active: false;
+    in property <bool> pill-active: false;
+    in property <int> selection: 0;
+
+    label := Text {
+        x: (parent.width - 100px) / 2;
+        y: parent.height - 62px;
+        width: 100px;
+
+        text: "TASKBAR";
+        color: #00b3b3;
+        font-size: 11px;
+        horizontal-alignment: center;
+        visible: root.active;
+    }
+
+    panel := Rectangle {
+        x: (parent.width - 190px) / 2;
+        y: parent.height - 45px;
+
+        width: 190px;
+        height: 36px;
+        border-radius: 10px;
+        border-width: root.active ? 2px : 0px;
+        border-color: #00b3b3;
+
+        background: #1a1a1a;
+        visible: root.pill-active;
+        HorizontalLayout {
+            padding: 8px;
+            spacing: 4px;
+            alignment: center;
+
+            for idx in [0, 1, 2, 3, 4, 5, 6] : TaskbarIcon {
+                selected: root.selection == idx;
+            }
+        }
+    }
+
+    hidden_pill := Rectangle {
+        x: (parent.width - 190px) / 2;
+        y: parent.height - 10px;
+
+        width: 190px;
+        height: 36px;
+        border-radius: 10px;
+        border-width: root.active ? 2px : 0px;
+        border-color: #00b3b3;
+
+        background: #1a1a1a;
+        visible: !root.pill-active;
+    }
+}

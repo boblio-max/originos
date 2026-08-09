@@ -1,0 +1,72 @@
+export component CommandBubble inherits Rectangle {
+    in property <bool> active: false;
+    in property <string> bubble-text: "origin-dev@OrOS-DEV:~$";
+    in property <string> bubble-gen-text: "";
+    in property <bool> output-generated: false;
+
+    label := Text {
+        x: 725px;
+        y: 85px;
+        width: 110px;
+
+        text: "COMMAND BUBBLE";
+        color: #00b3b3;
+        font-size: 11px;
+        horizontal-alignment: center;
+        visible: root.active;
+    }
+
+    box := Rectangle {
+        x: 650px;
+        y: 100px;
+
+        background: #000000dd;
+        border-radius: 6px;
+        border-width: 5px;
+        border-color: #008080;
+        width: max(text_box.preferred-width + 24px, 260px);
+        height: max(text_box.preferred-height + 20px, 36px);
+        visible: root.active;
+
+        text_box := Text {
+            x: 12px;
+            y: 10px;
+
+            text: root.bubble-text;
+            color: #d4d4d4;
+            font-size: 15px;
+
+            wrap: word-wrap;
+
+            horizontal-alignment: left;
+            vertical-alignment: top;
+        }
+    }
+
+    output_box := Rectangle {
+        x: 650px;
+        y: 150px;
+
+        background: #000000dd;
+        border-radius: 6px;
+        border-width: 5px;
+        border-color: #008080;
+        width: max(bubble_text_box.preferred-width + 24px, 260px);
+        height: max(bubble_text_box.preferred-height + 20px, 36px);
+        visible: root.output-generated && root.active;
+
+        bubble_text_box := Text {
+            x: 12px;
+            y: 10px;
+
+            text: root.bubble-gen-text;
+            color: #d4d4d4;
+            font-size: 15px;
+
+            wrap: word-wrap;
+
+            horizontal-alignment: left;
+            vertical-alignment: top;
+        }
+    }
+}
