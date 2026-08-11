@@ -1,9 +1,11 @@
 use crate::MainWindow;
+use crate::SettingsWindow;
 
 pub struct Taskbar {
     active: bool,
     selection: usize,
 }
+
 
 impl Taskbar {
     pub fn new() -> Self {
@@ -25,7 +27,7 @@ impl Taskbar {
         window.set_dock_selection(self.selection as i32);
     }
 
-    pub fn handle_key(&mut self, window: &MainWindow, key: &str) -> bool {
+    pub fn handle_key(&mut self, window: &MainWindow, key: &str, term_window: &mut SettingsWindow) -> bool {
         if !self.active {
             return false;
         }
@@ -42,7 +44,11 @@ impl Taskbar {
             "\n" | "\r" => {
                 let activated = self.selection;
                 self.close(window);
-                window.invoke_icon_activated(activated as i32);
+                if activated == 1 {
+                    term_window.toggle(window);
+                } else {
+                    window.invoke_icon_activated(activated as i32);
+                }
             }
             _ => {
                 self.close(window);

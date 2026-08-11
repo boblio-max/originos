@@ -1,6 +1,7 @@
 import { CommandBubble } from "command_bubble.slint";
 import { QuickSettings } from "quick_settings.slint";
 import { Taskbar } from "taskbar.slint";
+import { SettingWindow } from "settingswindow.slint";
 
 export component MainWindow inherits Window {
 title: "Origin OS";
@@ -26,6 +27,7 @@ background: #0c0c0c;
     in property <bool> qs_active: false;
     in property <bool> qsettings-active: false;
     in property <int> qs-selection: 0;
+    in-out property <bool> settings-window-active: false;
 
     callback icon-activated(int);
 
@@ -149,5 +151,13 @@ background: #0c0c0c;
         active: root.qsettings-active;
         pill-active: root.qs_active;
         selection: root.qs-selection;
+    }
+
+    setting_window := SettingWindow {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        settings-window-active: root.settings-window-active;
     }
 }

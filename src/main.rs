@@ -8,12 +8,13 @@ mod command_bubble;
 mod commands;
 mod quick_settings;
 mod taskbar;
+mod settingswindow;
 
 use command_bubble::CommandBubble;
 use commands::OriginShell;
 use quick_settings::QuickSettings;
 use taskbar::Taskbar;
-
+use settingswindow::SettingsWindow;
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 
 slint::include_modules!();
@@ -354,7 +355,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut tab_held = false;
         let mut quick_settings = QuickSettings::new();
         let mut taskbar = Taskbar::new();
-
+        let mut settings = SettingsWindow::new();
+        
         window.on_key_input(
             move |key, control| {
                 if key == "\u{0009}" {
@@ -412,7 +414,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 if taskbar.active() {
                     if let Some(w1) = weak_window_for_input.upgrade() {
-                        if taskbar.handle_key(&w1, key.as_str()) {
+                        if taskbar.handle_key(&w1, key.as_str(), &mut settings) {
                             return;
                         }
                     }
