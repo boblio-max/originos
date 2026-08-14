@@ -4,22 +4,90 @@ use std::{
     sync::{Arc, Mutex},
     thread,
 };
+// use crossterm::event::KeyModifiers;
+
 mod command_bubble;
 mod commands;
 mod quick_settings;
 mod taskbar;
 mod settingswindow;
+mod window1;
+mod window2;
+mod window3;
+mod window4;
+mod window5;
 
 use command_bubble::CommandBubble;
 use commands::OriginShell;
 use quick_settings::QuickSettings;
 use taskbar::Taskbar;
 use settingswindow::SettingsWindow;
+use window1::Window1;
+use window2::Window2;
+use window3::Window3;
+use window4::Window4;
+use window5::Window5;
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 
 slint::include_modules!();
 
+#[derive(Default)]
+struct WindowDrawTracker {
+    draw_history: Vec<usize>,
+}
 
+impl WindowDrawTracker {
+    fn record_draw(&mut self, window_index: usize) {
+        self.draw_history.push(window_index);
+    }
+
+    fn latest_window_drawn_index(&self) -> Option<usize> {
+        self.draw_history.last().copied()
+    }
+}
+
+struct Translator {
+    x_translation: i32,
+    y_translation: i32,
+    x_scale: i32,
+    y_scale: i32,
+}
+
+impl Translator {
+    fn new() -> Self {
+        Self {
+            x_translation: 0,
+            y_translation: 0,
+            x_scale: 0,
+            y_scale: 0,
+        }
+    }
+
+    fn translate(&mut self, delta_x: i32, delta_y: i32) -> (i32, i32) {
+        self.x_translation += delta_x;
+        self.y_translation += delta_y;
+        (self.x_translation, self.y_translation)
+    }
+    fn scale(&mut self, delta_x: i32, delta_y: i32) -> (i32, i32) {
+        self.x_scale += delta_x;
+        self.y_scale += delta_y;
+        (self.x_scale, self.y_scale)
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::WindowDrawTracker;
+
+    #[test]
+    fn tracks_latest_drawn_window() {
+        let mut tracker = WindowDrawTracker::default();
+        tracker.record_draw(0);
+        tracker.record_draw(2);
+        tracker.record_draw(4);
+
+        assert_eq!(tracker.latest_window_drawn_index(), Some(4));
+    }
+}
 
 /// Resolve a usable shell program.
 ///
@@ -68,6 +136,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let window = MainWindow::new()?;
     let origin_shell = OriginShell::new();
+    let draw_tracker = Arc::new(Mutex::new(WindowDrawTracker::default()));
+    {
+        let mut tracker = draw_tracker.lock().unwrap();
+        tracker.record_draw(0);
+    }
     // ─────────────────────────────────────────────
     // CREATE PTYs
     // ─────────────────────────────────────────────
@@ -350,23 +423,39 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let writer = pty_writer.clone();
         let bubble_writer = bwriter.clone();
         let weak_window_for_input = window.as_weak();
+        let draw_tracker_for_input = draw_tracker.clone();
 
         let mut bubble = CommandBubble::new();
         let mut tab_held = false;
+        let mut shift_held = false;
+        // let mut arrow_held = false;
         let mut quick_settings = QuickSettings::new();
         let mut taskbar = Taskbar::new();
         let mut settings = SettingsWindow::new();
-        
+        let mut window1 = Window1::new();
+        let mut window2 = Window2::new();
+        let mut window3 = Window3::new();
+        let mut window4 = Window4::new();
+        let mut window5 = Window5::new();
+        let mut translator = Translator::new();
         window.on_key_input(
             move |key, control| {
+
                 if key == "\u{0009}" {
                     tab_held = true;
                     return;
                 }
+                if key == "\u{0053}"  {
+                    shift_held = true;
+                    return;
+                }
+
 
                 if key.eq_ignore_ascii_case("q") && tab_held {
                     if let Some(w1) = weak_window_for_input.upgrade() {
                         bubble.toggle(&w1);
+                        let mut tracker = draw_tracker_for_input.lock().unwrap();
+                        tracker.record_draw(1);
                     }
                     tab_held = false;
 
@@ -380,6 +469,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 if key.eq_ignore_ascii_case("s") && tab_held {
                     if let Some(w1) = weak_window_for_input.upgrade() {
                         quick_settings.toggle(&w1);
+                        let mut tracker = draw_tracker_for_input.lock().unwrap();
+                        tracker.record_draw(2);
                     }
                     tab_held = false;
 
@@ -401,6 +492,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 if key.eq_ignore_ascii_case("t") && tab_held {
                     if let Some(w1) = weak_window_for_input.upgrade() {
                         taskbar.toggle(&w1);
+                        let mut tracker = draw_tracker_for_input.lock().unwrap();
+                        tracker.record_draw(4);
                     }
                     tab_held = false;
 
@@ -411,10 +504,178 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                     return;
                 }
+                if key.eq("\u{f700}") && tab_held && !shift_held {
+                    let latest_index = draw_tracker_for_input
+                        .lock()
+                        .unwrap()
+                        .latest_window_drawn_index()
+                        .unwrap_or(0);
+                    let translated = translator.translate(0, -5);
+                    if let Some(w1) = weak_window_for_input.upgrade() {
+                        settings.translate(&w1, translated.0, translated.1);
+                    }
+                    println!(
+                        "Latest drawn window index: {} -> translated ({}, {})",
+                        latest_index,
+                        translated.0,
+                        translated.1
+                    );
 
+                    tab_held = false;
+                }
+                if key.eq("\u{f701}") && tab_held && !shift_held {
+                    let latest_index = draw_tracker_for_input
+                        .lock()
+                        .unwrap()
+                        .latest_window_drawn_index()
+                        .unwrap_or(0);
+                    let translated = translator.translate(0, 5);
+                    if let Some(w1) = weak_window_for_input.upgrade() {
+                        settings.translate(&w1, translated.0, translated.1);
+                    }
+                    println!(
+                        "Latest drawn window index: {} -> translated ({}, {})",
+                        latest_index,
+                        translated.0,
+                        translated.1
+                    );
+
+                    tab_held = false;
+                }
+                
+                
+                if key.eq("\u{f702}") && tab_held && !shift_held {
+                    let latest_index = draw_tracker_for_input
+                        .lock()
+                        .unwrap()
+                        .latest_window_drawn_index()
+                        .unwrap_or(0);
+                    let translated = translator.translate(-5, 0);
+                    if let Some(w1) = weak_window_for_input.upgrade() {
+                        settings.translate(&w1, translated.0, translated.1);
+                    }
+                    println!(
+                        "Latest drawn window index: {} -> translated ({}, {})",
+                        latest_index,
+                        translated.0,
+                        translated.1
+                    );
+
+                    tab_held = false;
+                }
+                
+                if key.eq("\u{f703}") && tab_held && !shift_held {
+                    let latest_index = draw_tracker_for_input
+                        .lock()
+                        .unwrap()
+                        .latest_window_drawn_index()
+                        .unwrap_or(0);
+                    let translated = translator.translate(5, 0);
+                    if let Some(w1) = weak_window_for_input.upgrade() {
+                        settings.translate(&w1, translated.0, translated.1);
+                    }
+                    println!(
+                        "Latest drawn window index: {} -> translated ({}, {})",
+                        latest_index,
+                        translated.0,
+                        translated.1
+                    );
+
+                    tab_held = false;
+                }
+
+                // SCALING CHANGES
+                // Up = grow taller, Down = grow shorter (vertical)
+                // Right = grow wider, Left = grow narrower (horizontal)
+                if key.eq("\u{f700}") && tab_held  && shift_held {
+                    let latest_index = draw_tracker_for_input
+                        .lock()
+                        .unwrap()
+                        .latest_window_drawn_index()
+                        .unwrap_or(0);
+                    let scaled = translator.scale(0, 5);
+                    if let Some(w1) = weak_window_for_input.upgrade() {
+                        settings.scale(&w1, scaled.0, scaled.1);
+                    }
+                    println!(
+                        "Latest drawn window index: {} -> scaled ({}, {})",
+                        latest_index,
+                        scaled.0,
+                        scaled.1
+                    );
+
+                    tab_held = false;
+                    shift_held = false;
+                }
+                if key.eq("\u{f701}") && tab_held && shift_held { 
+                    let latest_index = draw_tracker_for_input
+                        .lock()
+                        .unwrap()
+                        .latest_window_drawn_index()
+                        .unwrap_or(0);
+                    let scaled = translator.scale(0, -5);
+                    if let Some(w1) = weak_window_for_input.upgrade() {
+                        settings.scale(&w1, scaled.0, scaled.1);
+                    }
+                    println!(
+                        "Latest drawn window index: {} -> scaled ({}, {})",
+                        latest_index,
+                        scaled.0,
+                        scaled.1
+                    );
+
+                    tab_held = false;
+                    shift_held = false;
+                }
+                
+                
+                if key.eq("\u{f702}") && tab_held  && shift_held {
+                    let latest_index = draw_tracker_for_input
+                        .lock()
+                        .unwrap()
+                        .latest_window_drawn_index()
+                        .unwrap_or(0);
+                    let scaled = translator.scale(-5, 0);
+                    if let Some(w1) = weak_window_for_input.upgrade() {
+                        settings.scale(&w1, scaled.0, scaled.1);
+                    }
+                    println!(
+                        "Latest drawn window index: {} -> scaled ({}, {})",
+                        latest_index,
+                        scaled.0,
+                        scaled.1
+                    );
+
+                    tab_held = false;
+                    shift_held = false;
+                }
+                
+                if key.eq("\u{f703}") && tab_held  && shift_held {
+                    let latest_index = draw_tracker_for_input
+                        .lock()
+                        .unwrap()
+                        .latest_window_drawn_index()
+                        .unwrap_or(0);
+                    let scaled = translator.scale(5, 0);
+                    if let Some(w1) = weak_window_for_input.upgrade() {
+                        settings.scale(&w1, scaled.0, scaled.1);
+                    }
+                    println!(
+                        "Latest drawn window index: {} -> scaled ({}, {})",
+                        latest_index,
+                        scaled.0,
+                        scaled.1
+                    );
+
+                    tab_held = false;
+                    shift_held = false;
+                }
+                
                 if taskbar.active() {
                     if let Some(w1) = weak_window_for_input.upgrade() {
-                        if taskbar.handle_key(&w1, key.as_str(), &mut settings) {
+                        if taskbar.handle_key(&w1, key.as_str(), &mut settings, &mut window1, &mut window2, &mut window3, &mut window4, &mut window5) {
+                            let mut tracker = draw_tracker_for_input.lock().unwrap();
+                            tracker.record_draw(1);
                             return;
                         }
                     }
@@ -603,7 +864,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // visible feedback.
     {
         let writer = pty_writer.clone();
+        let draw_tracker_for_icon = draw_tracker.clone();
         window.on_icon_activated(move |index| {
+            {
+                let mut tracker = draw_tracker_for_icon.lock().unwrap();
+                tracker.record_draw(index as usize);
+            }
+
             println!("Dock icon {} activated", index + 1);
             let mut writer = writer.lock().unwrap();
             let _ = writer.write_all(

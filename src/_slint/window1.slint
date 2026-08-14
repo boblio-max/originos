@@ -1,5 +1,5 @@
-export component SettingWindow inherits Rectangle {
-    in property <bool> settings_window_active: false;
+export component Window1 inherits Rectangle {
+    in property <bool> window1_active: false;
     in property <int> x_translation: 0;
     in property <int> y_translation: 0;
     in property <int> x_scale: 0;
@@ -14,17 +14,17 @@ export component SettingWindow inherits Rectangle {
         border-color: #008080;
         width: 500px + (x_scale * 1px);
         height: 500px + (y_scale * 1px);
-        visible: root.settings_window_active;
+        visible: root.window1_active;
     }
     label := Text {
         x: 100px + (x_translation * 1px);
         y: 90px + (y_translation * 1px);
         width: 110px;
 
-        text: "Terminal";
+        text: "Window 1";
         color: #00b3b3;
         font-size: 11px + (x_scale * 1px);
         horizontal-alignment: center;
-        visible: root.settings_window_active;
+        visible: root.window1_active;
     }
 }

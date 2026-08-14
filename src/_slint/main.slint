@@ -2,6 +2,11 @@ import { CommandBubble } from "command_bubble.slint";
 import { QuickSettings } from "quick_settings.slint";
 import { Taskbar } from "taskbar.slint";
 import { SettingWindow } from "settingswindow.slint";
+import { Window1 } from "window1.slint";
+import { Window2 } from "window2.slint";
+import { Window3 } from "window3.slint";
+import { Window4 } from "window4.slint";
+import { Window5 } from "window5.slint";
 
 export component MainWindow inherits Window {
 title: "Origin OS";
@@ -28,6 +33,35 @@ background: #0c0c0c;
     in property <bool> qsettings-active: false;
     in property <int> qs-selection: 0;
     in-out property <bool> settings-window-active: false;
+    in-out property <int> settings-window-x-translation: 0;
+    in-out property <int> settings-window-y-translation: 0;
+    in-out property <int> settings-window-x-scale: 0;
+    in-out property <int> settings-window-y-scale: 0;
+    in-out property <bool> window-1-active: false;
+    in-out property <int> window-1-x-translation: 0;
+    in-out property <int> window-1-y-translation: 0;
+    in-out property <int> window-1-x-scale: 0;
+    in-out property <int> window-1-y-scale: 0;
+    in-out property <bool> window-2-active: false;
+    in-out property <int> window-2-x-translation: 0;
+    in-out property <int> window-2-y-translation: 0;
+    in-out property <int> window-2-x-scale: 0;
+    in-out property <int> window-2-y-scale: 0;
+    in-out property <bool> window-3-active: false;
+    in-out property <int> window-3-x-translation: 0;
+    in-out property <int> window-3-y-translation: 0;
+    in-out property <int> window-3-x-scale: 0;
+    in-out property <int> window-3-y-scale: 0;
+    in-out property <bool> window-4-active: false;
+    in-out property <int> window-4-x-translation: 0;
+    in-out property <int> window-4-y-translation: 0;
+    in-out property <int> window-4-x-scale: 0;
+    in-out property <int> window-4-y-scale: 0;
+    in-out property <bool> window-5-active: false;
+    in-out property <int> window-5-x-translation: 0;
+    in-out property <int> window-5-y-translation: 0;
+    in-out property <int> window-5-x-scale: 0;
+    in-out property <int> window-5-y-scale: 0;
 
     callback icon-activated(int);
 
@@ -159,5 +193,69 @@ background: #0c0c0c;
         width: parent.width;
         height: parent.height;
         settings-window-active: root.settings-window-active;
+        x_translation: root.settings-window-x-translation;
+        y_translation: root.settings-window-y-translation;
+        x_scale: root.settings-window-x-scale;
+        y_scale: root.settings-window-y-scale;
+    }
+
+    window_1 := Window1 {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        window1-active: root.window-1-active;
+        x_translation: root.window-1-x-translation;
+        y_translation: root.window-1-y-translation;
+        x_scale: root.window-1-x-scale;
+        y_scale: root.window-1-y-scale;
+    }
+
+    window_2 := Window2 {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        window2-active: root.window-2-active;
+        x_translation: root.window-2-x-translation;
+        y_translation: root.window-2-y-translation;
+        x_scale: root.window-2-x-scale;
+        y_scale: root.window-2-y-scale;
+    }
+
+    window_3 := Window3 {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        window3-active: root.window-3-active;
+        x_translation: root.window-3-x-translation;
+        y_translation: root.window-3-y-translation;
+        x_scale: root.window-3-x-scale;
+        y_scale: root.window-3-y-scale;
+    }
+
+    window_4 := Window4 {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        window4-active: root.window-4-active;
+        x_translation: root.window-4-x-translation;
+        y_translation: root.window-4-y-translation;
+        x_scale: root.window-4-x-scale;
+        y_scale: root.window-4-y-scale;
+    }
+
+    window_5 := Window5 {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        window5-active: root.window-5-active;
+        x_translation: root.window-5-x-translation;
+        y_translation: root.window-5-y-translation;
+        x_scale: root.window-5-x-scale;
+        y_scale: root.window-5-y-scale;
     }
 }

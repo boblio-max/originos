@@ -1,6 +1,6 @@
 use crate::MainWindow;
 
-pub struct SettingsWindow {
+pub struct Window2 {
     active: bool,
     x_translation: i32,
     y_translation: i32,
@@ -8,7 +8,7 @@ pub struct SettingsWindow {
     y_scale: i32,
 }
 
-impl SettingsWindow {
+impl Window2 {
     pub fn new() -> Self {
         Self {
             active: false,
@@ -25,26 +25,26 @@ impl SettingsWindow {
 
     pub fn close(&mut self, window: &MainWindow) {
         self.active = false;
-        window.set_settings_window_active(false);
+        window.set_window_2_active(false);
     }
 
     pub fn toggle(&mut self, window: &MainWindow) {
         self.active = !self.active;
-        window.set_settings_window_active(self.active);
+        window.set_window_2_active(self.active);
     }
 
     pub fn translate(&mut self, window: &MainWindow, x: i32, y: i32) {
         self.x_translation = x;
         self.y_translation = y;
-        window.set_settings_window_x_translation(x);
-        window.set_settings_window_y_translation(y);
+        window.set_window_2_x_translation(x);
+        window.set_window_2_y_translation(y);
     }
 
     pub fn scale(&mut self, window: &MainWindow, x: i32, y: i32) {
         self.x_scale = x;
         self.y_scale = y;
-        window.set_settings_window_x_scale(x);
-        window.set_settings_window_y_scale(y);
+        window.set_window_2_x_scale(x);
+        window.set_window_2_y_scale(y);
     }
 
 }

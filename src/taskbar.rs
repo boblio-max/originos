@@ -1,5 +1,10 @@
 use crate::MainWindow;
 use crate::SettingsWindow;
+use crate::Window1;
+use crate::Window2;
+use crate::Window3;
+use crate::Window4;
+use crate::Window5;
 
 pub struct Taskbar {
     active: bool,
@@ -27,7 +32,7 @@ impl Taskbar {
         window.set_dock_selection(self.selection as i32);
     }
 
-    pub fn handle_key(&mut self, window: &MainWindow, key: &str, term_window: &mut SettingsWindow) -> bool {
+    pub fn handle_key(&mut self, window: &MainWindow, key: &str, term_window: &mut SettingsWindow, term_window2: &mut Window1, term_window3: &mut Window2, term_window4: &mut Window3, term_window5: &mut Window4, term_window6: &mut Window5) -> bool {
         if !self.active {
             return false;
         }
@@ -44,10 +49,22 @@ impl Taskbar {
             "\n" | "\r" => {
                 let activated = self.selection;
                 self.close(window);
-                if activated == 1 {
-                    term_window.toggle(window);
-                } else {
-                    window.invoke_icon_activated(activated as i32);
+                match activated {
+                    0 => {
+                        term_window.close(window);
+                        term_window2.close(window);
+                        term_window3.close(window);
+                        term_window4.close(window);
+                        term_window5.close(window);
+                        term_window6.close(window);
+                    }
+                    1 => term_window.toggle(window),
+                    2 => term_window2.toggle(window),
+                    3 => term_window3.toggle(window),
+                    4 => term_window4.toggle(window),
+                    5 => term_window5.toggle(window),
+                    6 => term_window6.toggle(window),
+                    _ => {}
                 }
             }
             _ => {
