@@ -2,7 +2,7 @@ import { CommandBubble } from "command_bubble.slint";
 import { QuickSettings } from "quick_settings.slint";
 import { Taskbar } from "taskbar.slint";
 import { SettingWindow } from "settingswindow.slint";
-import { Window1 } from "window1.slint";
+import { SystemInfo } from "systeminfo.slint";
 import { Window2 } from "window2.slint";
 import { Window3 } from "window3.slint";
 import { Window4 } from "window4.slint";
@@ -62,6 +62,31 @@ background: #0c0c0c;
     in-out property <int> window-5-y-translation: 0;
     in-out property <int> window-5-x-scale: 0;
     in-out property <int> window-5-y-scale: 0;
+
+    in property <string> thermal_cpu: "CPU : 52.0 C";
+    in property <string> thermal_gpu: "GPU : 61.0 C";
+    in property <string> thermal_ssd: "SSD : 41.0 C";
+    in property <string> thermal_status: "STATUS: NOMINAL";
+    in property <string> sys_os: "OS  : OriginOS 1.0.0";
+    in property <string> sys_kernel: "KERN: 6.8.0-45-generic";
+    in property <string> sys_host: "HOST: OrOS-DEV";
+    in property <string> sys_uptime: "UP  : 2d 13h 41m";
+    in property <string> proc_header: "PID  PARENT CPU   MEM";
+    in property <string> proc_a: "0004 0000   1.2%  34MB";
+    in property <string> proc_b: "0567 0004   0.8% 512MB";
+    in property <string> proc_c: "0892 0004   4.5% 890MB";
+    in property <string> storage_header: "DRV FS   CAP  FREE  TYPE";
+    in property <string> storage_a: "C:  NTFS 512G 120G  SSD";
+    in property <string> storage_b: "D:  exFAT 1.0T 640G  HDD";
+    in property <string> storage_c: "TMP tmpfs 8.0G 3.2G  RAM";
+    in property <string> cpu_brand: "CPU : Intel Core i7-13700K";
+    in property <string> cpu_cores: "CORE: 16 phys / 24 logical";
+    in property <string> cpu_max_freq: "FREQ: 5.30 GHz max";
+    in property <string> cpu_cur_freq: "CUR : 3.42 GHz";
+    in property <string> mem_total: "TOTAL: 32.0 GB";
+    in property <string> mem_avail: "AVAIL: 21.7 GB";
+    in property <string> mem_used: "USED : 10.3 GB";
+    in property <string> mem_swap: "SWAP : 2.1 / 16.0 GB";
 
     callback icon-activated(int);
 
@@ -199,16 +224,40 @@ background: #0c0c0c;
         y_scale: root.settings-window-y-scale;
     }
 
-    window_1 := Window1 {
+    window_1 := SystemInfo {
         x: 0px;
         y: 0px;
         width: parent.width;
         height: parent.height;
-        window1-active: root.window-1-active;
+        systeminfo_active: root.window-1-active;
         x_translation: root.window-1-x-translation;
         y_translation: root.window-1-y-translation;
         x_scale: root.window-1-x-scale;
         y_scale: root.window-1-y-scale;
+        thermal_cpu <=> root.thermal_cpu;
+        thermal_gpu <=> root.thermal_gpu;
+        thermal_ssd <=> root.thermal_ssd;
+        thermal_status <=> root.thermal_status;
+        sys_os <=> root.sys_os;
+        sys_kernel <=> root.sys_kernel;
+        sys_host <=> root.sys_host;
+        sys_uptime <=> root.sys_uptime;
+        proc_header <=> root.proc_header;
+        proc_a <=> root.proc_a;
+        proc_b <=> root.proc_b;
+        proc_c <=> root.proc_c;
+        storage_header <=> root.storage_header;
+        storage_a <=> root.storage_a;
+        storage_b <=> root.storage_b;
+        storage_c <=> root.storage_c;
+        cpu_brand <=> root.cpu_brand;
+        cpu_cores <=> root.cpu_cores;
+        cpu_max_freq <=> root.cpu_max_freq;
+        cpu_cur_freq <=> root.cpu_cur_freq;
+        mem_total <=> root.mem_total;
+        mem_avail <=> root.mem_avail;
+        mem_used <=> root.mem_used;
+        mem_swap <=> root.mem_swap;
     }
 
     window_2 := Window2 {

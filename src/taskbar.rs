@@ -1,10 +1,10 @@
 use crate::MainWindow;
-use crate::SettingsWindow;
-use crate::Window1;
-use crate::Window2;
-use crate::Window3;
-use crate::Window4;
-use crate::Window5;
+use crate::settingswindow::SettingsWindow;
+use crate::systeminfo::SystemInfo;
+use crate::window2::Window2;
+use crate::window3::Window3;
+use crate::window4::Window4;
+use crate::window5::Window5;
 
 pub struct Taskbar {
     active: bool,
@@ -32,7 +32,7 @@ impl Taskbar {
         window.set_dock_selection(self.selection as i32);
     }
 
-    pub fn handle_key(&mut self, window: &MainWindow, key: &str, term_window: &mut SettingsWindow, term_window2: &mut Window1, term_window3: &mut Window2, term_window4: &mut Window3, term_window5: &mut Window4, term_window6: &mut Window5) -> bool {
+    pub fn handle_key(&mut self, window: &MainWindow, key: &str, term_window: &mut SettingsWindow, term_window2: &mut SystemInfo, term_window3: &mut Window2, term_window4: &mut Window3, term_window5: &mut Window4, term_window6: &mut Window5) -> bool {
         if !self.active {
             return false;
         }

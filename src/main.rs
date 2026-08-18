@@ -11,7 +11,7 @@ mod commands;
 mod quick_settings;
 mod taskbar;
 mod settingswindow;
-mod window1;
+mod systeminfo;
 mod window2;
 mod window3;
 mod window4;
@@ -22,7 +22,7 @@ use commands::OriginShell;
 use quick_settings::QuickSettings;
 use taskbar::Taskbar;
 use settingswindow::SettingsWindow;
-use window1::Window1;
+use systeminfo::SystemInfo;
 use window2::Window2;
 use window3::Window3;
 use window4::Window4;
@@ -432,7 +432,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut quick_settings = QuickSettings::new();
         let mut taskbar = Taskbar::new();
         let mut settings = SettingsWindow::new();
-        let mut window1 = Window1::new();
+        let mut systeminfo = SystemInfo::new();
         let mut window2 = Window2::new();
         let mut window3 = Window3::new();
         let mut window4 = Window4::new();
@@ -657,8 +657,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         .latest_window_drawn_index()
                         .unwrap_or(0);
                     let scaled = translator.scale(5, 0);
-                    if let Some(w1) = weak_window_for_input.upgrade() {
+                    if let Some(w1) = weak_window_for_input.upgrade() && latest_index == 1 {
                         settings.scale(&w1, scaled.0, scaled.1);
+                    }
+                    else if let Some(w1) = weak_window_for_input.upgrade() && latest_index == 1 {
+                        systeminfo.scale(&w1, scaled.0, scaled.1);
                     }
                     println!(
                         "Latest drawn window index: {} -> scaled ({}, {})",
@@ -673,7 +676,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 
                 if taskbar.active() {
                     if let Some(w1) = weak_window_for_input.upgrade() {
-                        if taskbar.handle_key(&w1, key.as_str(), &mut settings, &mut window1, &mut window2, &mut window3, &mut window4, &mut window5) {
+                        if taskbar.handle_key(&w1, key.as_str(), &mut settings, &mut systeminfo, &mut window2, &mut window3, &mut window4, &mut window5) {
                             let mut tracker = draw_tracker_for_input.lock().unwrap();
                             tracker.record_draw(1);
                             return;

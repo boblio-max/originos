@@ -1,0 +1,315 @@
+//System INFO
+component SysPanel inherits Rectangle {
+    in property <string> title: "";
+    in property <string> line1: "";
+    in property <string> line2: "";
+    in property <string> line3: "";
+    in property <string> line4: "";
+
+    background: #0a0a0aff;
+    border-width: 1px;
+    border-color: #00808088;
+    border-radius: 3px;
+    vertical-stretch: 1;
+
+    VerticalLayout {
+        padding: 6px;
+        spacing: 2px;
+
+        Text {
+            text: root.title;
+            color: #00b3b3;
+            font-size: 12px;
+        }
+        Text {
+            text: root.line1;
+            color: #d4d4d4;
+            font-size: 11px;
+        }
+        Text {
+            text: root.line2;
+            color: #d4d4d4;
+            font-size: 11px;
+        }
+        Text {
+            text: root.line3;
+            color: #d4d4d4;
+            font-size: 11px;
+        }
+        Text {
+            text: root.line4;
+            color: #d4d4d4;
+            font-size: 11px;
+        }
+    }
+}
+
+export component SystemInfo inherits Rectangle {
+    in property <bool> systeminfo_active: false;
+    in property <int> x_translation: 0;
+    in property <int> y_translation: 0;
+    in property <int> x_scale: 0;
+    in property <int> y_scale: 0;
+    in property <string> thermal_cpu: "CPU : 52.0 C";
+    in property <string> thermal_gpu: "GPU : 61.0 C";
+    in property <string> thermal_ssd: "SSD : 41.0 C";
+    in property <string> thermal_status: "STATUS: NOMINAL";
+    in property <string> proc_header: "PID  PARENT CPU   MEM";
+    in property <string> proc_a: "0004 0000   1.2%  34MB";
+    in property <string> proc_b: "0567 0004   0.8% 512MB";
+    in property <string> proc_c: "0892 0004   4.5% 890MB";
+    in property <string> storage_header: "DRV FS   CAP  FREE  TYPE";
+    in property <string> storage_a: "C:  NTFS 512G 120G  SSD";
+    in property <string> storage_b: "D:  exFAT 1.0T 640G  HDD";
+    in property <string> storage_c: "TMP tmpfs 8.0G 3.2G  RAM";
+    in property <string> sys_os: "OS  : OriginOS 1.0.0";
+    in property <string> sys_kernel: "KERN: 6.8.0-45-generic";
+    in property <string> sys_host: "HOST: OrOS-DEV";
+    in property <string> sys_uptime: "UP  : 2d 13h 41m";
+    in property <string> cpu_brand: "CPU : Intel Core i7-13700K";
+    in property <string> cpu_cores: "CORE: 16 phys / 24 logical";
+    in property <string> cpu_max_freq: "FREQ: 5.30 GHz max";
+    in property <string> cpu_cur_freq: "CUR : 3.42 GHz";
+    in property <string> mem_total: "TOTAL: 32.0 GB";
+    in property <string> mem_avail: "AVAIL: 21.7 GB";
+    in property <string> mem_used: "USED : 10.3 GB";
+    in property <string> mem_swap: "SWAP : 2.1 / 16.0 GB";
+    in property <bool> second_win_active: false;
+    window := Rectangle {
+        x: 100px + (x_translation * 1px);
+        y: 100px + (y_translation * 1px);
+
+        background: #000000dd;
+        border-radius: 6px;
+        border-width: 5px;
+        border-color: #008080;
+        width: 500px + (x_scale * 1px);
+        height: 500px + (y_scale * 1px);
+        visible: root.systeminfo_active && !root.second_win_active;
+
+        header := Text {
+            x: 12px;
+            y: 6px;
+            width: parent.width - 24px;
+
+            text: "SYSTEM MANAGER";
+            color: #00b3b3;
+            font-size: 13px;
+            horizontal-alignment: center;
+        }
+
+        pages := HorizontalLayout {
+            x: 12px + (310px + (x_scale * 1px));
+            y: 8px;
+
+            width: 10px;
+            height: 10px;
+            spacing: 5px;
+
+            Rectangle {
+                background: root.systeminfo_active && !root.second_win_active ? #00b3b3 : #454444;
+                border-radius: 10px;
+                border-width: root.systeminfo_active ? 2px : 0px;
+                border-color: root.systeminfo_active && !root.second_win_active ? #00b3b3 : #454444;
+            }
+            Rectangle {
+                background: root.systeminfo_active && root.second_win_active ? #00b3b3 : #454444;
+                border-radius: 10px;
+                border-width: root.systeminfo_active ? 2px : 0px;
+                border-color: root.systeminfo_active && root.second_win_active ? #00b3b3 : #454444;
+            }
+            
+        }
+        content := HorizontalLayout {
+            x: 12px;
+            y: 26px;
+            width: parent.width - 24px;
+            height: parent.height - 38px;
+            spacing: 8px;
+
+            VerticalLayout {
+                spacing: 8px;
+                horizontal-stretch: 1;
+
+                SysPanel {
+                    title: "THERMALS";
+                    line1: root.thermal_cpu;
+                    line2: root.thermal_gpu;
+                    line3: root.thermal_ssd;
+                    line4: root.thermal_status;
+                }
+                SysPanel {
+                    title: "PROCESSES";
+                    line1: root.proc_header;
+                    line2: root.proc_a;
+                    line3: root.proc_b;
+                    line4: root.proc_c;
+                }
+                SysPanel {
+                    title: "STORAGE";
+                    line1: root.storage_header;
+                    line2: root.storage_a;
+                    line3: root.storage_b;
+                    line4: root.storage_c;
+                }
+            }
+
+            VerticalLayout {
+                spacing: 8px;
+                horizontal-stretch: 1;
+
+                SysPanel {
+                    title: "SYSTEM";
+                    line1: root.sys_os;
+                    line2: root.sys_kernel;
+                    line3: root.sys_host;
+                    line4: root.sys_uptime;
+                }
+                SysPanel {
+                    title: "CPU";
+                    line1: root.cpu_brand;
+                    line2: root.cpu_cores;
+                    line3: root.cpu_max_freq;
+                    line4: root.cpu_cur_freq;
+                }
+                SysPanel {
+                    title: "MEMORY";
+                    line1: root.mem_total;
+                    line2: root.mem_avail;
+                    line3: root.mem_used;
+                    line4: root.mem_swap;
+                }
+            }
+        }
+    }
+    label := Text {
+        x: 100px + (x_translation * 1px);
+        y: 90px + (y_translation * 1px);
+        width: 130px;
+
+        text: "System Manager";
+        color: #00b3b3;
+        font-size: 11px + (x_scale * 1px);
+        horizontal-alignment: center;
+        visible: root.systeminfo_active;
+    }
+    
+    window := Rectangle {
+        x: 100px + (x_translation * 1px);
+        y: 100px + (y_translation * 1px);
+
+        background: #000000dd;
+        border-radius: 6px;
+        border-width: 5px;
+        border-color: #008080;
+        width: 500px + (x_scale * 1px);
+        height: 500px + (y_scale * 1px);
+        visible: !root.systeminfo_active && root.second_win_active;
+
+        header := Text {
+            x: 12px;
+            y: 6px;
+            width: parent.width - 24px;
+
+            text: "SYSTEM MANAGER";
+            color: #00b3b3;
+            font-size: 13px;
+            horizontal-alignment: center;
+        }
+
+        pages := HorizontalLayout {
+            x: 12px + (310px + (x_scale * 1px));
+            y: 8px;
+
+            width: 10px;
+            height: 10px;
+            spacing: 5px;
+
+            Rectangle {
+                background: root.systeminfo_active && root.second_win_active ? #00b3b3 : #454444;
+                border-radius: 10px;
+                border-width: root.systeminfo_active ? 2px : 0px;
+                border-color: root.systeminfo_active && root.second_win_active ? #00b3b3 : #454444;
+            }
+            Rectangle {
+                background: root.systeminfo_active && root.second_win_active ? #00b3b3 : #454444;
+                border-radius: 10px;
+                border-width: root.systeminfo_active ? 2px : 0px;
+                border-color: root.systeminfo_active && root.second_win_active ? #00b3b3 : #454444;
+            }
+            
+        }
+        content := HorizontalLayout {
+            x: 12px;
+            y: 26px;
+            width: parent.width - 24px;
+            height: parent.height - 38px;
+            spacing: 8px;
+
+            VerticalLayout {
+                spacing: 8px;
+                horizontal-stretch: 1;
+
+                SysPanel {
+                    title: "THERMALS";
+                    line1: root.thermal_cpu;
+                    line2: root.thermal_gpu;
+                    line3: root.thermal_ssd;
+                    line4: root.thermal_status;
+                }
+                SysPanel {
+                    title: "PROCESSES";
+                    line1: root.proc_header;
+                    line2: root.proc_a;
+                    line3: root.proc_b;
+                    line4: root.proc_c;
+                }
+                SysPanel {
+                    title: "STORAGE";
+                    line1: root.storage_header;
+                    line2: root.storage_a;
+                    line3: root.storage_b;
+                    line4: root.storage_c;
+                }
+            }
+
+            VerticalLayout {
+                spacing: 8px;
+                horizontal-stretch: 1;
+
+                SysPanel {
+                    title: "SYSTEM";
+                    line1: root.sys_os;
+                    line2: root.sys_kernel;
+                    line3: root.sys_host;
+                    line4: root.sys_uptime;
+                }
+                SysPanel {
+                    title: "CPU";
+                    line1: root.cpu_brand;
+                    line2: root.cpu_cores;
+                    line3: root.cpu_max_freq;
+                    line4: root.cpu_cur_freq;
+                }
+                SysPanel {
+                    title: "MEMORY";
+                    line1: root.mem_total;
+                    line2: root.mem_avail;
+                    line3: root.mem_used;
+                    line4: root.mem_swap;
+                }
+            }
+        }
+    }
+    label := Text {
+        x: 100px + (x_translation * 1px);
+        y: 90px + (y_translation * 1px);
+        width: 130px;
+
+        text: "System Manager";
+        color: #00b3b3;
+        font-size: 11px + (x_scale * 1px);
+        horizontal-alignment: center;
+        visible: root.systeminfo_active;
+    }
+}

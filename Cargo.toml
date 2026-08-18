@@ -10,6 +10,7 @@ crossterm = "0.27"
 portable-pty = "0.8"
 tui-term = "0.1"
 vt100 = "0.15"
+sysinfo = "0.38"
 
 [build-dependencies]
 slint-build = "1.17"
