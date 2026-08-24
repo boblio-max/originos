@@ -1,0 +1,66 @@
+export component OriginCircle inherits Rectangle {
+    // Mirrors Taskbar API so it uses same MainWindow variables:
+    // active <=> dock-active, pill-active <=> taskbar-active, selection <=> dock-selection
+    in property <bool> active: false;
+    in property <bool> pill-active: false;
+    in property <int> selection: 0;
+
+    // Keep label separate from Taskbar so both are readable when dock is active.
+    // Taskbar label is centered; Origin is offset left so they don't overlap.
+    label := Text {
+        x: (parent.width - 100px) / 2 - 110px;
+        y: parent.height - 62px;
+        width: 100px;
+
+        text: "ORIGIN";
+        color: #00b3b3;
+        font-size: 11px;
+        horizontal-alignment: center;
+        visible: root.active;
+    }
+
+    // The actual circle — 36x36, sits 8px left of the taskbar pill.
+    // Taskbar pill is 190px wide centered: x = (W-190)/2.
+    // Circle x = pill_x - 36 - 8 = (W-190)/2 - 44.
+    circle := Rectangle {
+        x: (parent.width - 190px) / 2 - 44px;
+        y: parent.height - 45px;
+
+        width: 36px;
+        height: 36px;
+        border-radius: 18px;
+        border-width: root.active ? 2px : 0px;
+        border-color: #00b3b3;
+
+        // Highlights when selection == 0 (the "origin" slot in taskbar.rs).
+        // Otherwise shows idle. Mirrors TaskbarIcon selected ? #00b3b3 : #454444.
+        background: root.selection == 0 ? #00b3b3 : #1a1a1a;
+        visible: root.pill-active;
+
+        // inner icon — smaller dot to show selected state clearly
+        inner := Rectangle {
+            x: (parent.width - 14px) / 2;
+            y: (parent.height - 14px) / 2;
+            width: 14px;
+            height: 14px;
+            border-radius: 7px;
+            background: root.selection == 0 ? #1a1a1a : #454444;
+        }
+    }
+
+    // Peeking state — same y as Taskbar hidden_pill (-10px) so both peek
+    // together when dock is hidden. Still 36x36 circle, not a pill.
+    hidden_circle := Rectangle {
+        x: (parent.width - 190px) / 2 + 15px;
+        y: parent.height - 45px;
+
+        width: 36px;
+        height: 36px;
+        border-radius: 18px;
+        border-width: root.active ? 2px : 0px;
+        border-color: #00b3b3;
+
+        background: #1a1a1a;
+        visible: !root.pill-active;
+    }
+}

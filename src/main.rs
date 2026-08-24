@@ -440,6 +440,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut translator = Translator::new();
         window.on_key_input(
             move |key, control| {
+                
+                let latest_index = draw_tracker_for_input
+                        .lock()
+                        .unwrap()
+                        .latest_window_drawn_index()
+                        .unwrap_or(0);
 
                 if key == "\u{0009}" {
                     tab_held = true;
@@ -450,7 +456,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     return;
                 }
 
-
+                if tab_held && key.eq_ignore_ascii_case("1") && latest_index == 2 {
+                    if let Some(w1) = weak_window_for_input.upgrade() {
+                        systeminfo.switch_to_page2(&w1);
+                    }
+                    tab_held = false;
+                }
                 if key.eq_ignore_ascii_case("q") && tab_held {
                     if let Some(w1) = weak_window_for_input.upgrade() {
                         bubble.toggle(&w1);
@@ -505,14 +516,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     return;
                 }
                 if key.eq("\u{f700}") && tab_held && !shift_held {
-                    let latest_index = draw_tracker_for_input
-                        .lock()
-                        .unwrap()
-                        .latest_window_drawn_index()
-                        .unwrap_or(0);
                     let translated = translator.translate(0, -5);
-                    if let Some(w1) = weak_window_for_input.upgrade() {
+                    if let Some(w1) = weak_window_for_input.upgrade() && latest_index == 1{
                         settings.translate(&w1, translated.0, translated.1);
+                    }
+                    if let Some(w1) = weak_window_for_input.upgrade() && latest_index == 2{
+                        systeminfo.translate(&w1, translated.0, translated.1);
                     }
                     println!(
                         "Latest drawn window index: {} -> translated ({}, {})",
@@ -676,9 +685,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 
                 if taskbar.active() {
                     if let Some(w1) = weak_window_for_input.upgrade() {
-                        if taskbar.handle_key(&w1, key.as_str(), &mut settings, &mut systeminfo, &mut window2, &mut window3, &mut window4, &mut window5) {
+                        if let Some(draw_index) = taskbar.handle_key(&w1, key.as_str(), &mut settings, &mut systeminfo, &mut window2, &mut window3, &mut window4, &mut window5) {
                             let mut tracker = draw_tracker_for_input.lock().unwrap();
-                            tracker.record_draw(1);
+                            tracker.record_draw(draw_index);
                             return;
                         }
                     }

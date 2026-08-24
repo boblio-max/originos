@@ -1,6 +1,7 @@
 import { CommandBubble } from "command_bubble.slint";
 import { QuickSettings } from "quick_settings.slint";
 import { Taskbar } from "taskbar.slint";
+import { OriginCircle } from "origin_circle.slint";
 import { SettingWindow } from "settingswindow.slint";
 import { SystemInfo } from "systeminfo.slint";
 import { Window2 } from "window2.slint";
@@ -38,6 +39,7 @@ background: #0c0c0c;
     in-out property <int> settings-window-x-scale: 0;
     in-out property <int> settings-window-y-scale: 0;
     in-out property <bool> window-1-active: false;
+    in-out property <bool> window-1-second-active: false;
     in-out property <int> window-1-x-translation: 0;
     in-out property <int> window-1-y-translation: 0;
     in-out property <int> window-1-x-scale: 0;
@@ -202,6 +204,16 @@ background: #0c0c0c;
         selection: root.dock-selection;
     }
 
+    origin_circle := OriginCircle {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        active: root.dock-active;
+        pill-active: root.taskbar-active;
+        selection: root.dock-selection;
+    }
+
     quick_settings := QuickSettings {
         x: 0px;
         y: 0px;
@@ -230,6 +242,7 @@ background: #0c0c0c;
         width: parent.width;
         height: parent.height;
         systeminfo_active: root.window-1-active;
+        second_win_active: root.window-1-second-active;
         x_translation: root.window-1-x-translation;
         y_translation: root.window-1-y-translation;
         x_scale: root.window-1-x-scale;

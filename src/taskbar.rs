@@ -32,11 +32,12 @@ impl Taskbar {
         window.set_dock_selection(self.selection as i32);
     }
 
-    pub fn handle_key(&mut self, window: &MainWindow, key: &str, term_window: &mut SettingsWindow, term_window2: &mut SystemInfo, term_window3: &mut Window2, term_window4: &mut Window3, term_window5: &mut Window4, term_window6: &mut Window5) -> bool {
+    pub fn handle_key(&mut self, window: &MainWindow, key: &str, term_window: &mut SettingsWindow, term_window2: &mut SystemInfo, term_window3: &mut Window2, term_window4: &mut Window3, term_window5: &mut Window4, term_window6: &mut Window5) -> Option<usize> {
         if !self.active {
-            return false;
+            return None;
         }
 
+        let mut activated_index = None;
         match key {
             "\u{f702}" => {
                 self.selection = (self.selection + 6) % 7;
@@ -66,13 +67,16 @@ impl Taskbar {
                     6 => term_window6.toggle(window),
                     _ => {}
                 }
+                if activated != 0 {
+                    activated_index = Some(activated);
+                }
             }
             _ => {
                 self.close(window);
             }
         }
 
-        true
+        activated_index
     }
 
     fn close(&mut self, window: &MainWindow) {

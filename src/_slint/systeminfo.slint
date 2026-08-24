@@ -194,7 +194,7 @@ export component SystemInfo inherits Rectangle {
         visible: root.systeminfo_active;
     }
     
-    window := Rectangle {
+    window1 := Rectangle {
         x: 100px + (x_translation * 1px);
         y: 100px + (y_translation * 1px);
 
@@ -204,20 +204,20 @@ export component SystemInfo inherits Rectangle {
         border-color: #008080;
         width: 500px + (x_scale * 1px);
         height: 500px + (y_scale * 1px);
-        visible: !root.systeminfo_active && root.second_win_active;
+        visible: root.systeminfo_active && root.second_win_active;
 
-        header := Text {
+        header1 := Text {
             x: 12px;
             y: 6px;
             width: parent.width - 24px;
 
-            text: "SYSTEM MANAGER";
+            text: "PERFORMANCE MANAGER";
             color: #00b3b3;
             font-size: 13px;
             horizontal-alignment: center;
         }
 
-        pages := HorizontalLayout {
+        pages1 := HorizontalLayout {
             x: 12px + (310px + (x_scale * 1px));
             y: 8px;
 
@@ -226,10 +226,10 @@ export component SystemInfo inherits Rectangle {
             spacing: 5px;
 
             Rectangle {
-                background: root.systeminfo_active && root.second_win_active ? #00b3b3 : #454444;
+                background: root.systeminfo_active && !root.second_win_active ? #00b3b3 : #454444;
                 border-radius: 10px;
                 border-width: root.systeminfo_active ? 2px : 0px;
-                border-color: root.systeminfo_active && root.second_win_active ? #00b3b3 : #454444;
+                border-color: root.systeminfo_active && !root.second_win_active ? #00b3b3 : #454444;
             }
             Rectangle {
                 background: root.systeminfo_active && root.second_win_active ? #00b3b3 : #454444;
@@ -239,69 +239,331 @@ export component SystemInfo inherits Rectangle {
             }
             
         }
-        content := HorizontalLayout {
+
+        content1 := HorizontalLayout {
             x: 12px;
             y: 26px;
             width: parent.width - 24px;
             height: parent.height - 38px;
-            spacing: 8px;
+            spacing: 0px;
 
-            VerticalLayout {
-                spacing: 8px;
-                horizontal-stretch: 1;
+            // ── Left sidebar: resource list ──
+            Rectangle {
+                width: 90px;
+                background: #0a0a0a;
+                border-width: 1px;
+                border-color: #00808044;
+                border-radius: 3px;
 
-                SysPanel {
-                    title: "THERMALS";
-                    line1: root.thermal_cpu;
-                    line2: root.thermal_gpu;
-                    line3: root.thermal_ssd;
-                    line4: root.thermal_status;
-                }
-                SysPanel {
-                    title: "PROCESSES";
-                    line1: root.proc_header;
-                    line2: root.proc_a;
-                    line3: root.proc_b;
-                    line4: root.proc_c;
-                }
-                SysPanel {
-                    title: "STORAGE";
-                    line1: root.storage_header;
-                    line2: root.storage_a;
-                    line3: root.storage_b;
-                    line4: root.storage_c;
+                VerticalLayout {
+                    padding: 4px;
+                    spacing: 2px;
+
+                    // CPU
+                    Rectangle {
+                        height: 42px;
+                        background: #00808033;
+                        border-radius: 2px;
+
+                        VerticalLayout {
+                            padding-left: 6px;
+                            padding-right: 6px;
+                            padding-top: 3px;
+                            spacing: 2px;
+
+                            Text {
+                                text: "CPU";
+                                color: #00b3b3;
+                                font-size: 11px;
+                                font-weight: 700;
+                            }
+                            Rectangle {
+                                height: 4px;
+                                background: #1a1a1a;
+                                border-radius: 2px;
+                                clip: true;
+
+                                Rectangle {
+                                    x: 0px;
+                                    width: parent.width * 0.42;
+                                    height: parent.height;
+                                    background: #00b3b3;
+                                    border-radius: 2px;
+                                }
+                            }
+                        }
+                    }
+
+                    // Memory
+                    Rectangle {
+                        height: 42px;
+                        background: #00808022;
+                        border-radius: 2px;
+
+                        VerticalLayout {
+                            padding-left: 6px;
+                            padding-right: 6px;
+                            padding-top: 3px;
+                            spacing: 2px;
+
+                            Text {
+                                text: "Memory";
+                                color: #00b3b3;
+                                font-size: 11px;
+                                font-weight: 700;
+                            }
+                            Rectangle {
+                                height: 4px;
+                                background: #1a1a1a;
+                                border-radius: 2px;
+                                clip: true;
+
+                                Rectangle {
+                                    x: 0px;
+                                    width: parent.width * 0.67;
+                                    height: parent.height;
+                                    background: #00b3b3;
+                                    border-radius: 2px;
+                                }
+                            }
+                        }
+                    }
+
+                    // Disk
+                    Rectangle {
+                        height: 42px;
+                        background: #00808022;
+                        border-radius: 2px;
+
+                        VerticalLayout {
+                            padding-left: 6px;
+                            padding-right: 6px;
+                            padding-top: 3px;
+                            spacing: 2px;
+
+                            Text {
+                                text: "Disk 0";
+                                color: #00b3b3;
+                                font-size: 11px;
+                                font-weight: 700;
+                            }
+                            Rectangle {
+                                height: 4px;
+                                background: #1a1a1a;
+                                border-radius: 2px;
+                                clip: true;
+
+                                Rectangle {
+                                    x: 0px;
+                                    width: parent.width * 0.18;
+                                    height: parent.height;
+                                    background: #00b3b3;
+                                    border-radius: 2px;
+                                }
+                            }
+                        }
+                    }
+
+                    // Network
+                    Rectangle {
+                        height: 42px;
+                        background: #00808022;
+                        border-radius: 2px;
+
+                        VerticalLayout {
+                            padding-left: 6px;
+                            padding-right: 6px;
+                            padding-top: 3px;
+                            spacing: 2px;
+
+                            Text {
+                                text: "Ethernet";
+                                color: #00b3b3;
+                                font-size: 11px;
+                                font-weight: 700;
+                            }
+                            Rectangle {
+                                height: 4px;
+                                background: #1a1a1a;
+                                border-radius: 2px;
+                                clip: true;
+
+                                Rectangle {
+                                    x: 0px;
+                                    width: parent.width * 0.08;
+                                    height: parent.height;
+                                    background: #00b3b3;
+                                    border-radius: 2px;
+                                }
+                            }
+                        }
+                    }
+
+                    // GPU
+                    Rectangle {
+                        height: 42px;
+                        background: #00808022;
+                        border-radius: 2px;
+
+                        VerticalLayout {
+                            padding-left: 6px;
+                            padding-right: 6px;
+                            padding-top: 3px;
+                            spacing: 2px;
+
+                            Text {
+                                text: "GPU";
+                                color: #00b3b3;
+                                font-size: 11px;
+                                font-weight: 700;
+                            }
+                            Rectangle {
+                                height: 4px;
+                                background: #1a1a1a;
+                                border-radius: 2px;
+                                clip: true;
+
+                                Rectangle {
+                                    x: 0px;
+                                    width: parent.width * 0.35;
+                                    height: parent.height;
+                                    background: #00b3b3;
+                                    border-radius: 2px;
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
-            VerticalLayout {
-                spacing: 8px;
+            // ── Right detail panel ──
+            Rectangle {
                 horizontal-stretch: 1;
+                background: #0a0a0a;
+                border-width: 1px;
+                border-color: #00808044;
+                border-radius: 3px;
 
-                SysPanel {
-                    title: "SYSTEM";
-                    line1: root.sys_os;
-                    line2: root.sys_kernel;
-                    line3: root.sys_host;
-                    line4: root.sys_uptime;
-                }
-                SysPanel {
-                    title: "CPU";
-                    line1: root.cpu_brand;
-                    line2: root.cpu_cores;
-                    line3: root.cpu_max_freq;
-                    line4: root.cpu_cur_freq;
-                }
-                SysPanel {
-                    title: "MEMORY";
-                    line1: root.mem_total;
-                    line2: root.mem_avail;
-                    line3: root.mem_used;
-                    line4: root.mem_swap;
+                VerticalLayout {
+                    padding: 8px;
+                    spacing: 4px;
+
+                    // ── Title + big percentage ──
+                    Text {
+                        text: "CPU";
+                        color: #00b3b3;
+                        font-size: 12px;
+                        font-weight: 700;
+                    }
+                    Text {
+                        text: "42%";
+                        color: #d4d4d4;
+                        font-size: 28px;
+                        font-weight: 700;
+                    }
+
+                    // ── History graph placeholder ──
+                    Rectangle {
+                        height: 120px;
+                        background: #0f0f0f;
+                        border-width: 1px;
+                        border-color: #00808033;
+                        border-radius: 2px;
+                        clip: true;
+
+                        // Horizontal grid lines
+                        Rectangle { x: 0px; y: parent.height * 0.25 - 0.5px; width: parent.width; height: 1px; background: #00808018; }
+                        Rectangle { x: 0px; y: parent.height * 0.50 - 0.5px; width: parent.width; height: 1px; background: #00808018; }
+                        Rectangle { x: 0px; y: parent.height * 0.75 - 0.5px; width: parent.width; height: 1px; background: #00808018; }
+
+                        // Simulated history bars (left to right = old to new)
+                        HorizontalLayout {
+                            x: 4px;
+                            y: 4px;
+                            width: parent.width - 8px;
+                            height: parent.height - 8px;
+                            spacing: 1px;
+                            alignment: start;
+
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.5; y: parent.height * 0.3; height: parent.height * 0.7; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.5; y: parent.height * 0.4; height: parent.height * 0.6; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.5; y: parent.height * 0.25; height: parent.height * 0.75; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.5; y: parent.height * 0.5; height: parent.height * 0.5; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.5; y: parent.height * 0.35; height: parent.height * 0.65; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.5; y: parent.height * 0.2; height: parent.height * 0.8; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.55; y: parent.height * 0.45; height: parent.height * 0.55; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.55; y: parent.height * 0.3; height: parent.height * 0.7; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.55; y: parent.height * 0.15; height: parent.height * 0.85; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.55; y: parent.height * 0.35; height: parent.height * 0.65; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.6; y: parent.height * 0.5; height: parent.height * 0.5; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.6; y: parent.height * 0.4; height: parent.height * 0.6; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.6; y: parent.height * 0.55; height: parent.height * 0.45; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.6; y: parent.height * 0.3; height: parent.height * 0.7; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.6; y: parent.height * 0.2; height: parent.height * 0.8; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.65; y: parent.height * 0.4; height: parent.height * 0.6; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.65; y: parent.height * 0.25; height: parent.height * 0.75; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.65; y: parent.height * 0.45; height: parent.height * 0.55; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.65; y: parent.height * 0.35; height: parent.height * 0.65; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.7; y: parent.height * 0.15; height: parent.height * 0.85; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.7; y: parent.height * 0.3; height: parent.height * 0.7; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.7; y: parent.height * 0.5; height: parent.height * 0.5; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.7; y: parent.height * 0.4; height: parent.height * 0.6; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.75; y: parent.height * 0.2; height: parent.height * 0.8; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.75; y: parent.height * 0.35; height: parent.height * 0.65; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.75; y: parent.height * 0.25; height: parent.height * 0.75; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.75; y: parent.height * 0.45; height: parent.height * 0.55; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.8; y: parent.height * 0.3; height: parent.height * 0.7; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.8; y: parent.height * 0.15; height: parent.height * 0.85; }
+                            Rectangle { vertical-stretch: 1; background: #008080; opacity: 0.8; y: parent.height * 0.4; height: parent.height * 0.6; }
+                            Rectangle { vertical-stretch: 1; background: #00b3b3; opacity: 0.85; y: parent.height * 0.5; height: parent.height * 0.5; }
+                            Rectangle { vertical-stretch: 1; background: #00b3b3; opacity: 0.85; y: parent.height * 0.35; height: parent.height * 0.65; }
+                            Rectangle { vertical-stretch: 1; background: #00b3b3; opacity: 0.85; y: parent.height * 0.2; height: parent.height * 0.8; }
+                            Rectangle { vertical-stretch: 1; background: #00b3b3; opacity: 0.9; y: parent.height * 0.4; height: parent.height * 0.6; }
+                            Rectangle { vertical-stretch: 1; background: #00b3b3; opacity: 0.9; y: parent.height * 0.3; height: parent.height * 0.7; }
+                            Rectangle { vertical-stretch: 1; background: #00b3b3; opacity: 0.9; y: parent.height * 0.1; height: parent.height * 0.9; }
+                            Rectangle { vertical-stretch: 1; background: #00b3b3; opacity: 1.0; y: parent.height * 0.45; height: parent.height * 0.55; }
+                            Rectangle { vertical-stretch: 1; background: #00b3b3; opacity: 1.0; y: parent.height * 0.55; height: parent.height * 0.45; }
+                            Rectangle { vertical-stretch: 1; background: #00b3b3; opacity: 1.0; y: parent.height * 0.35; height: parent.height * 0.65; }
+                            Rectangle { vertical-stretch: 1; background: #00b3b3; opacity: 1.0; y: parent.height * 0.58; height: parent.height * 0.42; }
+                        }
+                    }
+
+                    // ── Divider ──
+                    Rectangle {
+                        height: 1px;
+                        background: #00808033;
+                    }
+
+                    // ── Stats grid ──
+                    HorizontalLayout {
+                        spacing: 8px;
+
+                        VerticalLayout {
+                            spacing: 3px;
+                            horizontal-stretch: 1;
+
+                            Text { text: "Utilization:"; color: #008080; font-size: 10px; }
+                            Text { text: "Speed:"; color: #008080; font-size: 10px; }
+                            Text { text: "Processes:"; color: #008080; font-size: 10px; }
+                            Text { text: "Threads:"; color: #008080; font-size: 10px; }
+                            Text { text: "Up time:"; color: #008080; font-size: 10px; }
+                        }
+                        VerticalLayout {
+                            spacing: 3px;
+                            horizontal-stretch: 1;
+
+                            Text { text: "42%"; color: #d4d4d4; font-size: 10px; }
+                            Text { text: "3.42 GHz"; color: #d4d4d4; font-size: 10px; }
+                            Text { text: "186"; color: #d4d4d4; font-size: 10px; }
+                            Text { text: "2,847"; color: #d4d4d4; font-size: 10px; }
+                            Text { text: "2d 13h 41m"; color: #d4d4d4; font-size: 10px; }
+                        }
+                    }
                 }
             }
         }
     }
-    label := Text {
+    label1 := Text {
         x: 100px + (x_translation * 1px);
         y: 90px + (y_translation * 1px);
         width: 130px;
