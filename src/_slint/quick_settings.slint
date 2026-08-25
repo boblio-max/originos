@@ -1,9 +1,106 @@
-component QSIcon inherits Rectangle {
+// Quick Settings — OriginOS dropdown, matches SystemInfo/Settings visual language
+// Real quick-settings: pill when collapsed, expanded panel with sliders + toggle grid + footer.
+// Offload-ready: panel content is lightweight (no drop-shadow, no image) - mirrors settingswindow perf notes.
+
+component QSSliderBar inherits Rectangle {
+    in property <float> value: 0.5;
+    height: 4px;
+    background: #1a1a1a;
+    border-radius: 2px;
+    clip: true;
+    Rectangle {
+        x: 0px;
+        y: 0px;
+        width: parent.width * value;
+        height: parent.height;
+        background: #00b3b3;
+        border-radius: 2px;
+    }
+    Rectangle {
+        x: parent.width * value - 5px;
+        y: -4px;
+        width: 10px;
+        height: 12px;
+        border-radius: 5px;
+        background: #d4d4d4;
+        border-width: 1px;
+        border-color: #00b3b3;
+    }
+}
+
+component QSTile inherits Rectangle {
+    in property <string> title: "";
+    in property <string> subtitle: "";
+    in property <string> icon: "";
+    in property <bool> enabled: false;
     in property <bool> selected: false;
-    width: 30px;
-    height: 30px;
-    border-radius: 5px;
-    background: selected ? #00b3b3 : #454444;
+    height: 56px;
+    border-radius: 8px;
+    background: selected ? #00808044 : (enabled ? #00b3b322 : #0a0a0a);
+    border-width: 1px;
+    border-color: selected ? #00b3b3 : (enabled ? #00808066 : #00808022);
+
+    HorizontalLayout {
+        padding-left: 10px;
+        padding-right: 10px;
+        spacing: 10px;
+        alignment: start;
+
+        // icon circle
+        Rectangle {
+            width: 28px;
+            height: 28px;
+            border-radius: 14px;
+            background: enabled ? #00b3b3 : #2a2a2a;
+            border-width: 1px;
+            border-color: enabled ? #00b3b3 : #3a3a3a;
+
+            Text {
+                text: root.icon;
+                color: enabled ? #0a0a0a : #8a8a8a;
+                font-size: 12px;
+                font-weight: 700;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        VerticalLayout {
+            spacing: 1px;
+            alignment: center;
+            horizontal-stretch: 1;
+            Text {
+                text: root.title;
+                color: selected ? #00b3b3 : #d4d4d4;
+                font-size: 11px;
+                font-weight: 600;
+            }
+            Text {
+                text: root.subtitle;
+                color: enabled ? #00b3b3 : #6a6a6a;
+                font-size: 9px;
+            }
+        }
+    }
+}
+
+component FooterBtn inherits Rectangle {
+    in property <string> icon: "";
+    in property <bool> selected: false;
+    width: 28px;
+    height: 28px;
+    border-radius: 14px;
+    background: selected ? #00b3b3 : #0a0a0a;
+    border-width: 1px;
+    border-color: selected ? #00b3b3 : #00808033;
+
+    Text {
+        text: root.icon;
+        color: selected ? #0a0a0a : #d4d4d4;
+        font-size: 11px;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
 }
 
 export component QuickSettings inherits Rectangle {
@@ -11,49 +108,170 @@ export component QuickSettings inherits Rectangle {
     in property <bool> pill-active: false;
     in property <int> selection: 0;
 
+    // Placeholder live values - wired to settingswindow snapshot later if needed
+    in property <float> brightness: 0.75;
+    in property <float> volume: 0.52;
+    in property <bool> wifi-enabled: true;
+    in property <bool> bt-enabled: true;
+    in property <bool> airplane-enabled: false;
+    in property <bool> nightlight-enabled: false;
+
     hidden_pill := Rectangle {
         x: parent.width - 200px;
         y: 23px;
-
         width: 200px;
         height: 15px;
         border-width: root.pill-active ? 2px : 0px;
         border-radius: 10px;
         border-color: #1a1a1a;
-
         background: #1a1a1a;
         visible: !root.active;
     }
 
     panel := Rectangle {
-        x: parent.width - 200px;
+        x: parent.width - 340px;
         y: 28px;
-
-        width: 200px;
-        height: 100px;
-        border-radius: 10px;
-        border-width: root.active ? 2px : 0px;
-        border-color: #00b3b3;
-
+        width: 320px;
+        height: 380px;
+        border-radius: 12px;
+        border-width: root.active ? 1px : 0px;
+        border-color: #008080;
         background: #1a1a1a;
         visible: root.active;
-        GridLayout {
-            padding: 15px;
-            spacing: 5px;
+        clip: true;
 
-            for idx in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] : QSIcon {
-                row: idx / 5;
-                col: Math.mod(idx, 5);
-                selected: root.selection == idx;
+        VerticalLayout {
+            padding: 12px;
+            spacing: 10px;
+
+            // ── Header ──
+            HorizontalLayout {
+                spacing: 8px;
+                alignment: space-between;
+                Text {
+                    text: "Quick settings";
+                    color: #d4d4d4;
+                    font-size: 12px;
+                    font-weight: 700;
+                    vertical-alignment: center;
+                    horizontal-stretch: 1;
+                }
+                // edit/pin affordance like Win11
+                Rectangle {
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 13px;
+                    background: #0a0a0a;
+                    border-width: 1px;
+                    border-color: #00808022;
+                    Text { text: "✎"; color: #8a8a8a; font-size: 10px; horizontal-alignment: center; vertical-alignment: center; }
+                }
+            }
+
+            // ── Brightness ──
+            Rectangle {
+                height: 36px;
+                background: #0a0a0a;
+                border-width: 1px;
+                border-color: #00808022;
+                border-radius: 8px;
+                HorizontalLayout {
+                    padding-left: 10px;
+                    padding-right: 10px;
+                    spacing: 10px;
+                    alignment: center;
+                    Text { text: "☀"; color: #d4d4d4; font-size: 12px; vertical-alignment: center; }
+                    QSSliderBar { horizontal-stretch: 1; value: root.brightness; }
+                    Text { text: "75%"; color: #00b3b3; font-size: 10px; width: 30px; horizontal-alignment: right; vertical-alignment: center; }
+                }
+            }
+
+            // ── Volume ──
+            Rectangle {
+                height: 36px;
+                background: #0a0a0a;
+                border-width: 1px;
+                border-color: #00808022;
+                border-radius: 8px;
+                HorizontalLayout {
+                    padding-left: 10px;
+                    padding-right: 10px;
+                    spacing: 10px;
+                    alignment: center;
+                    Text { text: "♪"; color: #d4d4d4; font-size: 12px; vertical-alignment: center; }
+                    QSSliderBar { horizontal-stretch: 1; value: root.volume; }
+                    Text { text: "52%"; color: #00b3b3; font-size: 10px; width: 30px; horizontal-alignment: right; vertical-alignment: center; }
+                }
+            }
+
+            Rectangle { height: 1px; background: #00808022; }
+
+            // ── Toggle grid — 2 columns like Windows 11 / GNOME ──
+            GridLayout {
+                spacing: 8px;
+                // 8 tiles, 2 cols x 4 rows - real quick settings density
+                QSTile { row: 0; col: 0; title: "Wi-Fi"; subtitle: root.wifi-enabled ? "OrOS-Net" : "Off"; icon: "W"; enabled: root.wifi-enabled; selected: root.selection == 0; }
+                QSTile { row: 0; col: 1; title: "Bluetooth"; subtitle: root.bt-enabled ? "On" : "Off"; icon: "B"; enabled: root.bt-enabled; selected: root.selection == 1; }
+                QSTile { row: 1; col: 0; title: "Airplane"; subtitle: root.airplane-enabled ? "On" : "Off"; icon: "A"; enabled: root.airplane-enabled; selected: root.selection == 2; }
+                QSTile { row: 1; col: 1; title: "Battery saver"; subtitle: "Off"; icon: "S"; enabled: false; selected: root.selection == 3; }
+                QSTile { row: 2; col: 0; title: "Night light"; subtitle: root.nightlight-enabled ? "On" : "Off"; icon: "N"; enabled: root.nightlight-enabled; selected: root.selection == 4; }
+                QSTile { row: 2; col: 1; title: "Hotspot"; subtitle: "Off"; icon: "H"; enabled: false; selected: root.selection == 5; }
+                QSTile { row: 3; col: 0; title: "Focus"; subtitle: "Off"; icon: "F"; enabled: false; selected: root.selection == 6; }
+                QSTile { row: 3; col: 1; title: "VPN"; subtitle: "Off"; icon: "V"; enabled: false; selected: root.selection == 7; }
+            }
+
+            // ── Battery + footer ──
+            Rectangle {
+                height: 42px;
+                background: #0a0a0a;
+                border-width: 1px;
+                border-color: #00808022;
+                border-radius: 8px;
+                HorizontalLayout {
+                    padding: 8px;
+                    spacing: 10px;
+                    alignment: space-between;
+                    HorizontalLayout {
+                        spacing: 8px;
+                        alignment: start;
+                        Text { text: "🔋"; color: #00b3b3; font-size: 12px; vertical-alignment: center; }
+                        VerticalLayout {
+                            spacing: 0px;
+                            alignment: center;
+                            Text { text: "68%"; color: #d4d4d4; font-size: 11px; font-weight: 700; }
+                            Text { text: "3h 42m left"; color: #6a6a6a; font-size: 9px; }
+                        }
+                        Rectangle {
+                            width: 64px;
+                            height: 6px;
+                            background: #1a1a1a;
+                            border-radius: 3px;
+                            clip: true;
+                            Rectangle { x: 0; width: parent.width * 0.68; height: parent.height; background: #00b3b3; border-radius: 3px; }
+                        }
+                    }
+                    HorizontalLayout {
+                        spacing: 6px;
+                        alignment: end;
+                        FooterBtn { icon: "⚙"; selected: root.selection == 8; }
+                        FooterBtn { icon: "⏻"; selected: root.selection == 9; }
+                    }
+                }
+            }
+
+            Text {
+                text: "ENTER open • arrows move • ESC close";
+                color: #3a3a3a;
+                font-size: 8px;
+                horizontal-alignment: center;
             }
         }
     }
 
     label := Text {
-        x: parent.width - 150px;
-        y: 130px;
-        width: 100px;
-
+        x: parent.width - 170px;
+        y: 412px;
+        width: 140px;
         text: "QUICK SETTINGS";
         color: #00b3b3;
         font-size: 11px;

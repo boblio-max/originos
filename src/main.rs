@@ -8,6 +8,7 @@ use std::{
 
 mod command_bubble;
 mod commands;
+mod origin;
 mod quick_settings;
 mod taskbar;
 mod settingswindow;
@@ -19,6 +20,7 @@ mod window5;
 
 use command_bubble::CommandBubble;
 use commands::OriginShell;
+use origin::Origin;
 use quick_settings::QuickSettings;
 use taskbar::Taskbar;
 use settingswindow::SettingsWindow;
@@ -427,7 +429,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let mut bubble = CommandBubble::new();
         let mut tab_held = false;
-        let mut shift_held = false;
         // let mut arrow_held = false;
         let mut quick_settings = QuickSettings::new();
         let mut taskbar = Taskbar::new();
@@ -437,9 +438,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut window3 = Window3::new();
         let mut window4 = Window4::new();
         let mut window5 = Window5::new();
+        let mut origin = Origin::new();
         let mut translator = Translator::new();
         window.on_key_input(
-            move |key, control| {
+            move |text, key, control, meta, _alt, shift| {
                 
                 let latest_index = draw_tracker_for_input
                         .lock()
@@ -447,22 +449,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         .latest_window_drawn_index()
                         .unwrap_or(0);
 
-                if key == "\u{0009}" {
-                    tab_held = true;
-                    return;
-                }
-                if key == "\u{0053}"  {
-                    shift_held = true;
+                // Super/Win (Meta) solo - toggles origin_screen_toggle in origin_circle.slint:67
+                if key == "Super" || text == "\u{0017}" || text == "\u{0018}" {
+                    if let Some(w1) = weak_window_for_input.upgrade() {
+                        origin.toggle_screen(&w1);
+                    }
                     return;
                 }
 
-                if tab_held && key.eq_ignore_ascii_case("1") && latest_index == 2 {
+                if key == "Tab" {
+                    tab_held = true;
+                    return;
+                }
+                // shift is a modifier bool (event.modifiers.shift) - no latch needed
+
+                let _shortcut = tab_held || meta;
+                if _shortcut && text.eq_ignore_ascii_case("1") && latest_index == 2 {
                     if let Some(w1) = weak_window_for_input.upgrade() {
                         systeminfo.switch_to_page2(&w1);
                     }
                     tab_held = false;
                 }
-                if key.eq_ignore_ascii_case("q") && tab_held {
+                if text.eq_ignore_ascii_case("q") && (tab_held || meta) {
                     if let Some(w1) = weak_window_for_input.upgrade() {
                         bubble.toggle(&w1);
                         let mut tracker = draw_tracker_for_input.lock().unwrap();
@@ -477,7 +485,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     return;
                 }
 
-                if key.eq_ignore_ascii_case("s") && tab_held {
+                if text.eq_ignore_ascii_case("s") && (tab_held || meta) {
                     if let Some(w1) = weak_window_for_input.upgrade() {
                         quick_settings.toggle(&w1);
                         let mut tracker = draw_tracker_for_input.lock().unwrap();
@@ -493,14 +501,37 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 if quick_settings.active() {
                     if let Some(w1) = weak_window_for_input.upgrade() {
-                        if quick_settings.handle_key(&w1, key.as_str()) {
+                        if quick_settings.handle_key(&w1, if !key.is_empty() { key.as_str() } else { text.as_str() }) {
                             return;
                         }
                     }
                     return;
                 }
 
-                if key.eq_ignore_ascii_case("t") && tab_held {
+                // Origin screen — Rust backend `src/origin.rs:1` linked to `origin_circle.slint:67`.
+                // When the centered 400x240 screen is open, route keys there first (Esc/Enter/o to close).
+                if origin.screen_active() {
+                    if let Some(w1) = weak_window_for_input.upgrade() {
+                        let k = if !key.is_empty() { key.as_str() } else { text.as_str() };
+                        if origin.handle_key(&w1, k) {
+                            tab_held = false;
+                            return;
+                        }
+                    }
+                }
+                if text.eq_ignore_ascii_case("o") && (tab_held || meta) {
+                    if let Some(w1) = weak_window_for_input.upgrade() {
+                        origin.toggle_screen(&w1);
+                    }
+                    tab_held = false;
+                    println!(
+                        "Origin screen: {}",
+                        if origin.screen_active() { "OPEN" } else { "CLOSED" }
+                    );
+                    return;
+                }
+
+                if text.eq_ignore_ascii_case("t") && (tab_held || meta) {
                     if let Some(w1) = weak_window_for_input.upgrade() {
                         taskbar.toggle(&w1);
                         let mut tracker = draw_tracker_for_input.lock().unwrap();
@@ -515,7 +546,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                     return;
                 }
-                if key.eq("\u{f700}") && tab_held && !shift_held {
+                if key == "Up" && (tab_held || meta) && !shift {
                     let translated = translator.translate(0, -5);
                     if let Some(w1) = weak_window_for_input.upgrade() && latest_index == 1{
                         settings.translate(&w1, translated.0, translated.1);
@@ -532,7 +563,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                     tab_held = false;
                 }
-                if key.eq("\u{f701}") && tab_held && !shift_held {
+                if key == "Down" && (tab_held || meta) && !shift {
                     let latest_index = draw_tracker_for_input
                         .lock()
                         .unwrap()
@@ -553,7 +584,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 
                 
-                if key.eq("\u{f702}") && tab_held && !shift_held {
+                if key == "Left" && (tab_held || meta) && !shift {
                     let latest_index = draw_tracker_for_input
                         .lock()
                         .unwrap()
@@ -573,7 +604,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     tab_held = false;
                 }
                 
-                if key.eq("\u{f703}") && tab_held && !shift_held {
+                if key == "Right" && (tab_held || meta) && !shift {
                     let latest_index = draw_tracker_for_input
                         .lock()
                         .unwrap()
@@ -596,7 +627,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 // SCALING CHANGES
                 // Up = grow taller, Down = grow shorter (vertical)
                 // Right = grow wider, Left = grow narrower (horizontal)
-                if key.eq("\u{f700}") && tab_held  && shift_held {
+                if key == "Up" && (tab_held || meta) && shift {
                     let latest_index = draw_tracker_for_input
                         .lock()
                         .unwrap()
@@ -614,9 +645,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     );
 
                     tab_held = false;
-                    shift_held = false;
                 }
-                if key.eq("\u{f701}") && tab_held && shift_held { 
+                if key == "Down" && (tab_held || meta) && shift { 
                     let latest_index = draw_tracker_for_input
                         .lock()
                         .unwrap()
@@ -634,11 +664,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     );
 
                     tab_held = false;
-                    shift_held = false;
                 }
                 
                 
-                if key.eq("\u{f702}") && tab_held  && shift_held {
+                if key == "Left" && (tab_held || meta) && shift {
                     let latest_index = draw_tracker_for_input
                         .lock()
                         .unwrap()
@@ -656,10 +685,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     );
 
                     tab_held = false;
-                    shift_held = false;
                 }
                 
-                if key.eq("\u{f703}") && tab_held  && shift_held {
+                if key == "Right" && (tab_held || meta) && shift {
                     let latest_index = draw_tracker_for_input
                         .lock()
                         .unwrap()
@@ -680,12 +708,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     );
 
                     tab_held = false;
-                    shift_held = false;
                 }
                 
                 if taskbar.active() {
                     if let Some(w1) = weak_window_for_input.upgrade() {
-                        if let Some(draw_index) = taskbar.handle_key(&w1, key.as_str(), &mut settings, &mut systeminfo, &mut window2, &mut window3, &mut window4, &mut window5) {
+                        if let Some(draw_index) = taskbar.handle_key(&w1, if !key.is_empty() { key.as_str() } else { text.as_str() }, &mut settings, &mut systeminfo, &mut window2, &mut window3, &mut window4, &mut window5, &mut origin) {
                             let mut tracker = draw_tracker_for_input.lock().unwrap();
                             tracker.record_draw(draw_index);
                             return;
@@ -707,13 +734,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 // Bare modifier keys (Shift, etc.) can emit raw
                 // control characters on some platforms that aren't
                 // meant to be sent to either shell.
-                if key.chars().count() == 1 {
-                    let c = key.chars().next().unwrap();
+                if text.chars().count() == 1 {
+                    let c = text.chars().next().unwrap();
                     if (c as u32) < 0x20
-                        && key != "\n"
-                        && key != "\r"
-                        && key != "\u{8}"
-                        && key != "\u{1b}"
+                        && text != "\n"
+                        && text != "\r"
+                        && text != "\u{8}"
+                        && text != "\u{1b}"
                     {
                         return;
                     }
@@ -741,10 +768,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 // ─────────────────────────────────
 
                 if control {
-                    let key = key.to_ascii_lowercase();
+                    let t = text.to_ascii_lowercase();
 
-                    if key.len() == 1 {
-                        let byte = key.as_bytes()[0];
+                    if t.len() == 1 {
+                        let byte = t.as_bytes()[0];
 
                         // Ctrl+A = 0x01
                         // Ctrl+B = 0x02
@@ -773,63 +800,64 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 // ─────────────────────────────────
 
                 let bytes: Option<&[u8]> =
-                    if key == "\n"
-                        || key == "\r"
+                    if text == "\n"
+                        || text == "\r"
+                        || key == "Return"
                     {
                         Some(b"\r")
                     }
 
-                    else if key == "\u{8}" {
+                    else if key == "Backspace" || text == "\u{8}" {
                         // Backspace
                         Some(b"\x7f")
                     }
 
-                    else if key == "\u{1b}" {
+                    else if key == "Escape" || text == "\u{1b}" {
                         // Escape
                         Some(b"\x1b")
                     }
 
-                    else if key == "\u{f700}" {
+                    else if key == "Up" {
                         // Up Arrow
                         Some(b"\x1b[A")
                     }
 
-                    else if key == "\u{f701}" {
+                    else if key == "Down" {
                         // Down Arrow
                         Some(b"\x1b[B")
                     }
 
-                    else if key == "\u{f702}" {
+                    else if key == "Left" {
                         // Left Arrow
                         Some(b"\x1b[D")
                     }
 
-                    else if key == "\u{f703}" {
+                    else if key == "Right" {
                         // Right Arrow
                         Some(b"\x1b[C")
                     }
 
-                    else if key == "\u{f704}" {
+                    else if key == "F1" {
                         // F1
                         Some(b"\x1bOP")
                     }
 
-                    else if key == "\u{f705}" {
+                    else if key == "F2" {
                         // F2
                         Some(b"\x1bOQ")
                     }
 
-                    else if key == "\u{f706}" {
+                    else if key == "F3" {
                         // F3
                         Some(b"\x1bOR")
                     }
 
-                    else if key == "\u{f707}" {
+                    else if key == "F4" {
                         // F4
                         Some(b"\x1bOS")
                     }
 
-                    else if key == "\u{7f}" {
+                    else if key == "Delete" || text == "\u{7f}" {
                         // Delete
                         Some(b"\x1b[3~")
                     }
@@ -856,10 +884,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 // NORMAL TEXT
                 // ─────────────────────────────────
 
-                if !key.is_empty() {
+                if !text.is_empty() {
                     let _ =
                         writer.write_all(
-                            key.as_bytes(),
+                            text.as_bytes(),
                         );
 
                     let _ =

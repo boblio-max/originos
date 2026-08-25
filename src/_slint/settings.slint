@@ -1,6 +1,8 @@
 // Settings — OriginOS Settings app
 // Matches SystemInfo visual language: #000000dd window, #008080 border, #00b3b3 accent
-// User will wire up interactivity later — this is layout + placeholders.
+// Offloaded like SystemInfo: heavy sysinfo for About (OS/kernel/host/uptime) runs on
+// a background thread in settingswindow.rs via Snapshot + upgrade_in_event_loop.
+// Slint thread only does `set_*` - no blocking. See src/settingswindow.rs:run_refresh.
 
 component SidebarItem inherits Rectangle {
     in property <string> label: "";
@@ -39,7 +41,8 @@ component Toggle inherits Rectangle {
     background: checked ? #00b3b3 : #2a2a2a;
     border-width: 1px;
     border-color: checked ? #00b3b3 : #3a3a3a;
-    // knob
+    // knob - no drop-shadow (expensive raster, SystemInfo avoids it)
+    // Render is a single fill + border, cheaper than blurred shadow.
     Rectangle {
         x: checked ? parent.width - 14px - 2px : 2px;
         y: 2px;
@@ -47,8 +50,8 @@ component Toggle inherits Rectangle {
         height: 14px;
         border-radius: 7px;
         background: #d4d4d4;
-        drop-shadow-blur: 2px;
-        drop-shadow-color: #00000088;
+        border-width: 1px;
+        border-color: #00000022;
     }
 }
 
@@ -129,6 +132,13 @@ export component SettingWindow inherits Rectangle {
     in property <bool> sounds: false;
     in property <float> brightness: 0.75;
     in property <float> volume: 0.6;
+
+    // Snapshot-driven About strings - set off-thread via apply_snapshot
+    // Mirrors SystemInfo's thermal_*/sys_* pattern: background collect, UI only binds.
+    in property <string> settings_sys_os: "OS  : OriginOS 1.0.0";
+    in property <string> settings_sys_kernel: "KERN: 6.8.0-45-generic";
+    in property <string> settings_sys_host: "HOST: OrOS-DEV";
+    in property <string> settings_sys_uptime: "UP  : 2d 13h 41m";
 
     window := Rectangle {
         x: 100px + (x_translation * 1px);
@@ -348,6 +358,28 @@ export component SettingWindow inherits Rectangle {
                                     SliderBar { horizontal-stretch: 1; value: root.volume; }
                                     Text { text: "60%"; color: #00b3b3; font-size: 10px; width: 32px; horizontal-alignment: right; vertical-alignment: center; }
                                 }
+                            }
+                        }
+
+                        Rectangle { height: 1px; background: #00808022; }
+
+                        // ── About section — strings come from background Snapshot (offloaded)
+                        // Mirrors SystemInfo's SysPanel: cheap Text, no image/shadow, only repaints on 5s tick.
+                        Text { text: "ABOUT"; color: #00b3b3; font-size: 11px; font-weight: 700; }
+
+                        Rectangle {
+                            background: #0a0a0a;
+                            border-width: 1px;
+                            border-color: #00808044;
+                            border-radius: 3px;
+
+                            VerticalLayout {
+                                padding: 6px;
+                                spacing: 2px;
+                                Text { text: root.settings_sys_os; color: #d4d4d4; font-size: 11px; }
+                                Text { text: root.settings_sys_kernel; color: #d4d4d4; font-size: 11px; }
+                                Text { text: root.settings_sys_host; color: #d4d4d4; font-size: 11px; }
+                                Text { text: root.settings_sys_uptime; color: #d4d4d4; font-size: 11px; }
                             }
                         }
 

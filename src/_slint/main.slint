@@ -23,13 +23,15 @@ background: #0c0c0c;
     in property <string> bubble-gen-text: "";
     in-out property <bool> shortcut_pressed: false;
     in-out property <bool> output_generated: false;
-    // Rust receives every keyboard event directly.
-    callback key-input(string, bool);
+    // Rust receives every keyboard event directly - key-based detection for Command/Meta support.
+    // text: printable, key: Key enum name (Tab/Up/Down/Left/Right/Backspace etc.), modifiers.
+    callback key-input(string, string, bool, bool, bool, bool);
 
     // The dock is keyboard-driven: this OS has no mouse.
     in property <bool> dock-active: false;
     in property <bool> taskbar-active: false;
     in property <int> dock-selection: 0;
+    in-out property <bool> origin-screen-active: false;
     in property <bool> qs_active: false;
     in property <bool> qsettings-active: false;
     in property <int> qs-selection: 0;
@@ -90,6 +92,12 @@ background: #0c0c0c;
     in property <string> mem_used: "USED : 10.3 GB";
     in property <string> mem_swap: "SWAP : 2.1 / 16.0 GB";
 
+    // Settings snapshot - offloaded like SystemInfo (background thread, see settingswindow.rs)
+    in property <string> settings_sys_os: "OS  : OriginOS 1.0.0";
+    in property <string> settings_sys_kernel: "KERN: 6.8.0-45-generic";
+    in property <string> settings_sys_host: "HOST: OrOS-DEV";
+    in property <string> settings_sys_uptime: "UP  : 2d 13h 41m";
+
     callback icon-activated(int);
 
     // ─────────────────────────────────────────────
@@ -136,10 +144,13 @@ background: #0c0c0c;
         }
 
         key-pressed(event) => {
-            root.key-input(
-                event.text,
-                event.modifiers.control
-            );
+            // Map Slint Key enum to a stable string for Rust - avoids private unicode (\u{f700}) reliance
+            // and exposes Meta (Command/Super) so Cmd+Q etc. work on macOS/Windows.
+            // In Slint 1.17 KeyEvent has only `text`+`modifiers`; Key.* constants are unicode values for comparison.
+            // Super/Win is `Key.Meta` (\u{0017}) / `Key.MetaR` (\u{0018}) -> mapped to "Super" for Rust handler.
+            root.key-input(event.text,
+                event.text == Key.Tab ? "Tab" : event.text == Key.UpArrow ? "Up" : event.text == Key.DownArrow ? "Down" : event.text == Key.LeftArrow ? "Left" : event.text == Key.RightArrow ? "Right" : event.text == Key.Backspace ? "Backspace" : event.text == Key.Delete ? "Delete" : event.text == Key.Escape ? "Escape" : event.text == Key.Return ? "Return" : event.text == Key.F1 ? "F1" : event.text == Key.F2 ? "F2" : event.text == Key.F3 ? "F3" : event.text == Key.F4 ? "F4" : event.text == "\u{0017}" ? "Super" : event.text == "\u{0018}" ? "Super" : "",
+                event.modifiers.control, event.modifiers.meta, event.modifiers.alt, event.modifiers.shift);
             accept
         }
 
@@ -212,6 +223,7 @@ background: #0c0c0c;
         active: root.dock-active;
         pill-active: root.taskbar-active;
         selection: root.dock-selection;
+        origin_screen_toggle: root.origin-screen-active;
     }
 
     quick_settings := QuickSettings {
@@ -234,6 +246,10 @@ background: #0c0c0c;
         y_translation: root.settings-window-y-translation;
         x_scale: root.settings-window-x-scale;
         y_scale: root.settings-window-y-scale;
+        settings_sys_os <=> root.settings_sys_os;
+        settings_sys_kernel <=> root.settings_sys_kernel;
+        settings_sys_host <=> root.settings_sys_host;
+        settings_sys_uptime <=> root.settings_sys_uptime;
     }
 
     window_1 := SystemInfo {

@@ -30,23 +30,38 @@ impl QuickSettings {
             return false;
         }
 
+        // Real grid: 2 cols x 5 rows = 10 items (8 tiles + 2 footer).
+        // Mirrors taskbar/systeminfo nav but tuned for 2-col layout:
+        // left/right toggles column (XOR 1), up/down moves row (+/-2).
+        // Accepts both new Key names and legacy private unicode for compat.
         match key {
-            "\u{f702}" => {
-                self.selection = (self.selection + 4) % 5;
+            "\u{f702}" | "Left" => {
+                // Left — toggle column within row
+                self.selection ^= 1;
                 window.set_qs_selection(self.selection as i32);
             }
-            "\u{f703}" => {
-                self.selection = (self.selection + 1) % 5;
+            "\u{f703}" | "Right" => {
+                // Right — toggle column within row
+                self.selection ^= 1;
                 window.set_qs_selection(self.selection as i32);
             }
-            "\u{f700}" | "\u{f701}" => {
-                self.selection = (self.selection + 5) % 10;
+            "\u{f700}" | "Up" => {
+                // Up — previous row
+                self.selection = (self.selection + 8) % 10;
                 window.set_qs_selection(self.selection as i32);
             }
-            "\n" | "\r" => {
+            "\u{f701}" | "Down" => {
+                // Down — next row
+                self.selection = (self.selection + 2) % 10;
+                window.set_qs_selection(self.selection as i32);
+            }
+            "\n" | "\r" | "Return" | "Enter" => {
                 let activated = self.selection;
                 self.close(window);
                 window.invoke_icon_activated(activated as i32);
+            }
+            "Escape" | "\u{001b}" => {
+                self.close(window);
             }
             _ => {
                 self.close(window);
