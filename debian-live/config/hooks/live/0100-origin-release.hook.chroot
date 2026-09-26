@@ -1,0 +1,5 @@
+#!/bin/sh
+# Runs INSIDE the live chroot during the build. Keep hooks tiny and idempotent.
+# Name format matters: <NNNN>-<name>.hook.chroot, runs in numeric order.
+set -e
+echo "OriginOS (Debian trixie base)" > /etc/origin-release

@@ -1,0 +1,4 @@
+#!/bin/sh
+# Wipe live-build working dirs (chroot, cache, binary, stage).
+set -e
+lb clean "$@"

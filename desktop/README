@@ -1,0 +1,16 @@
+Origin desktop — YOUR implementation goes here
+=============================================
+This directory is intentionally almost empty. It holds the contract;
+you write the desktop.
+
+Contract with the rest of the distro:
+  1. Whatever you build must be installable as a Debian package
+     (a second package next to origin-desktop, e.g. origin-shell).
+  2. Its name goes into packages/origin-desktop/debian/control Depends:.
+  3. Default user config ships via debian-live/config/includes.chroot/etc/skel/
+     (shell.toml is already there as the example).
+  4. Keybinds live in ONE file with the schema in keybinds.example.toml,
+     so key handling stays uniform no matter which desktop you write.
+
+Suggested order: keybind schema first (it's the interface), then the
+smallest desktop that honors it, then package it.

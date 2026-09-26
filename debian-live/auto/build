@@ -1,0 +1,6 @@
+#!/bin/sh
+# Build the OriginOS ISO. Must run as root on a Debian host.
+set -e
+echo "Building OriginOS ISO..."
+lb build "$@"
+echo "Done. Look for originos-*.hybrid.iso in this directory."

@@ -1,0 +1,11 @@
+OriginOS kernel config
+=====================
+You do NOT maintain a full kernel config here — Debian's default is the
+base, and config-fragment/origin.cfg holds ONLY your overrides.
+
+Workflow (on a Debian build host with kernel source):
+  1. Uncomment options in config-fragment/origin.cfg (one at a time).
+  2. ./apply-fragment.sh /path/to/kernel-source
+  3. Build/test the kernel the normal Debian way before it gets near an ISO.
+
+Rule: if you can't explain what an option does, leave it commented.

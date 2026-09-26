@@ -1,0 +1,12 @@
+# OriginOS keybind schema (draft — yours to finalize).
+# One file, one schema, every desktop honors it. Format:
+#   action = "key combination"
+#
+# Modifiers: ctrl, alt, shift, super. Join with +. Single canonical form:
+# modifiers sorted alphabetically, lowercase, e.g. "alt+ctrl+t".
+
+[keys]
+# launch_terminal = "ctrl+alt+t"
+# launcher        = "super+space"
+# close_window    = "super+q"
+# switch_window   = "alt+tab"

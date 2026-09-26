@@ -1,0 +1,5 @@
+# Scripts that run on Debian must keep LF endings (CRLF breaks shebangs).
+debian-live/auto/* text eol=lf
+*.hook.chroot text eol=lf
+*.sh text eol=lf
+packages/origin-desktop/debian/rules text eol=lf

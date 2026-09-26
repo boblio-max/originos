@@ -1,0 +1,12 @@
+/target/
+/PLAN.md
+*.iso
+*.deb
+*.dsc
+*.changes
+*.buildinfo
+debian-live/binary/
+debian-live/cache/
+debian-live/chroot/
+debian-live/stage/
+debian-live/config/packages/*.deb

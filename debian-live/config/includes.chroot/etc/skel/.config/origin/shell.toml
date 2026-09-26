@@ -1,0 +1,11 @@
+# OriginOS default shell config — copied into every new user's home.
+# Config-as-product: half the distro feeling lives in files like this.
+[prompt]
+text = "origin> "
+
+[aliases]
+# ll = "ls -la"
+
+[keys]
+# Add your keybinds here (documented in desktop/keybinds.example.toml).
+# Example: launch_terminal = "ctrl+alt+t"

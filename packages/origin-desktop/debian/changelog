@@ -1,0 +1,5 @@
+origin-desktop (0.1.0) unstable; urgency=low
+
+  * Initial OriginOS desktop metapackage skeleton.
+
+ -- origin <you@example.com>  Sat, 26 Sep 2026 00:00:00 +0000

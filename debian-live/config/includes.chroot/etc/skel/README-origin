@@ -1,0 +1,6 @@
+Welcome to OriginOS.
+
+Upstream: Debian (untouched — kernel, drivers, packages).
+Origin layer: shell, keybinds, defaults. See /etc/origin-release.
+
+Your shell config lives at ~/.config/origin/shell.toml. Edit it freely.

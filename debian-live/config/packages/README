@@ -1,0 +1,12 @@
+How your own packages reach the ISO
+===============================
+live-build cannot download packages that aren't in Debian's archives.
+So anything you build in packages/ (e.g. origin-desktop) must be
+dropped here as a .deb before running lb build:
+
+  cd ../../packages/origin-desktop
+  dpkg-buildpackage -b -us -uc
+  cp ../origin-desktop_*.deb ../../debian-live/config/packages/
+
+live-build installs every .deb found in this directory into the image.
+This directory itself is gitignored — .debs are build artifacts, not source.

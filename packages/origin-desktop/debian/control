@@ -1,0 +1,22 @@
+Source: origin-desktop
+Maintainer: origin <you@example.com>
+Section: metapackages
+Priority: optional
+Build-Depends: debhelper-compat (= 13)
+Rules-Requires-Root: no
+
+Package: origin-desktop
+Architecture: all
+Depends: ${misc:Depends},
+ task-laptop,
+ network-manager-gnome | network-manager,
+ # --- YOUR desktop goes below. One dependency per piece. ---
+ # Rule of thumb: if you built it as a .deb, list it here.
+ # The "|" means "either is fine" (used above for the two
+ # network-manager frontends). Use plain commas for hard requirements.
+ # origin-shell,
+ # origin-keybinds,
+Description: OriginOS desktop metapackage
+ The Origin layer on top of Debian: desktop, keybinds, shell config.
+ This package ships (almost) no files — it is a shopping list.
+ Add your components above as you build them.

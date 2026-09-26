@@ -1,0 +1,28 @@
+#!/bin/sh
+# OriginOS live-build configuration.
+# Run on a Debian host (VM, bare metal, or Debian container) — NOT Windows:
+#   cd debian-live && sudo lb build
+set -e
+# Every flag below is yours to change. What each one does:
+#   --distribution trixie          Debian release to base on (trixie = stable)
+#   --archive-areas                Which repo sections to pull from;
+#                                  non-free-firmware = WiFi/GPU firmware blobs
+#   --debian-installer live        Ship the live installer (calamares/debian-installer)
+#   --image-name                   Output ISO name prefix
+#   --iso-*                        Labels stamped on the ISO (cosmetic, all yours)
+#   --bootloaders                  BIOS (syslinux) + UEFI (grub-efi) boot support
+#   --firmware-*                   Include proprietary firmware IN the image
+#                                  (needed for real laptops; purists turn it off)
+lb config noauto \
+  --distribution trixie \
+  --archive-areas "main contrib non-free non-free-firmware" \
+  --debian-installer live \
+  --debian-installer-distribution trixie \
+  --image-name originos \
+  --iso-application "OriginOS" \
+  --iso-publisher "Origin ecosystem" \
+  --iso-volume "ORIGINOS" \
+  --bootloaders "syslinux grub-efi" \
+  --firmware-binary true \
+  --firmware-chroot true \
+  "$@"

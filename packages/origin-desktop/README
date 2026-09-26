@@ -1,0 +1,13 @@
+origin-desktop metapackage
+=========================
+A metapackage installs nothing itself — it DEPENDS on things, so one
+`apt install origin-desktop` pulls your whole Origin layer.
+
+Workflow:
+  1. Build your pieces (desktop, keybinds, shell) as real packages.
+  2. Add each one to the Depends: list in debian/control.
+  3. dpkg-buildpackage -b -us -uc
+  4. Drop the .deb into debian-live/config/packages/ (see its README).
+  5. Rebuild the ISO.
+
+Set your real name/email in debian/control and debian/changelog first.

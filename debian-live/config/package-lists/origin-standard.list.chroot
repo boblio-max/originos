@@ -1,0 +1,18 @@
+# OriginOS default package set — the distro's shopping list.
+# One package per line. Most distro work happens HERE, not in code.
+# These packages land in the live system (and get installed by the installer).
+#
+# How to grow this file (your future 90%):
+#   1. apt search <thing> on Debian, find the package name.
+#   2. Add ONE line, rebuild, boot, check it works.
+#   3. If the ISO gets bloated, move extras to a second list file
+#      (e.g. origin-extras.list.chroot) so standard stays lean.
+
+# --- base system (keep small, trust Debian defaults) ---
+task-laptop
+network-manager
+sudo
+ca-certificates
+
+# --- Origin layer (built from packages/ in this repo, see config/packages/README) ---
+origin-desktop
