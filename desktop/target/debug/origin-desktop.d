@@ -1,0 +1,1 @@
+C:\Users\smile\OneDrive\Documents\GitHub\originos\desktop\target\debug\origin-desktop.exe: C:\Users\smile\OneDrive\Documents\GitHub\originos\desktop\src\keybind.rs C:\Users\smile\OneDrive\Documents\GitHub\originos\desktop\src\main.rs C:\Users\smile\OneDrive\Documents\GitHub\originos\desktop\src\shell.rs
